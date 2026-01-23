@@ -1,0 +1,203 @@
+\section{ALGORITHM}\label{sec::algorithm}
+
+
+As is standard in the best-of-both-worlds literature, our algorithm builds on the \emph{Follow-the-Regularized-Leader} (FTRL) framework \citep[see, e.g.,][Sec. 2.3]{ShalevShwartz12}. This general principle is characterized by three key design choices: a \emph{loss estimator}, a \emph{learning-rate schedule}, and an appropriate \emph{regularizer}.
+
+To obtain loss estimates adapted to the linear contextual setting, we follow the approach of \citet{BOBWlinear}, constructing importance-weighted regression estimates of the losses. For computational efficiency, we employ the \emph{Matrix Geometric Resampling (MGR)} method \citep{neu2013efficient, bartok2014partial, BOBWlinear}, which guarantees tractability while controlling both the bias and variance of the estimates (see also \citet{neu2016exploration}).
+
+
+The other components of our algorithm are more directly inspired by Algorithm 2 of \citet{BOBWhardproblems}, which addresses the best-of-both-worlds problem for multi-armed bandits with paid observations. In particular, we adopt their use of a Tsallis entropy regularizer, an adaptive learning-rate schedule, and the computation of an \emph{observation probability} that is uniform across arms. This probability is derived from the sampling probability vector produced by FTRL. This idea to use distinct observation and sampling probabilities originates from the initial work of \citep{SeldinS14}. 
+
+In the following we detail the components of our algorithm for linear contextual bandits with paid observations. The pseudo-code can be found in Algorithm~\ref{alg::FTRL_bobw}.
+
+
+%Building on the frameworks proposed in \citep{BOBWlinear, BOBWhardproblems}, and in particular Algorithm~2 of the latter (BOBW for bandits with paid observations), we introduce an algorithm based on the \emph{Follow-the-Regularized-Leader (FTRL)} paradigm, with Tsallis entropy regularization. % to interpolate between regimes. 
+
+\paragraph{Sampling distribution (FTRL)} We recall that, at each round $t\geq 1$, the learner observes a context vector $X_t$, and must choose an action $A_t\in [K]$. As a first step, our algorithm computes a sampling distribution $q_t(\cdot \mid X_t) \in \Delta_K$, where $\Delta_K$ denotes the $K-1$-dimensional probability simplex. Following \citet{BOBWhardproblems}, this distribution is obtained through the \emph{Follow-the-Regularized-Leader} (FTRL) principle, by solving the optimization problem 
+\begin{equation}\label{eq::FTRL}
+    \!\!\!q_t(\cdot|X_t) \!\in\! \underset{q \in \triangle_K}{\arg\min}\Bigg\{\!\sum_{s=1}^{t-1}\lan{\!q,\widetilde{\ell}_s(X_t)\!} + \psi_t(q) + \bar{\beta} H_{\bar{\alpha}}(q)\!\!\Bigg\}\!
+\end{equation}
+This formulation involves the following components:
+\begin{itemize}
+\item \textbf{Loss estimates.} For each round $s \leq t-1$,
+\begin{equation} \label{eq::estimator}
+    \widetilde \ell_s(X_t) := \Big(\lan{X_t,\widetilde{\theta}_{s,1}},\ldots,\lan{X_t,\widetilde{\theta}_{s,K}}\Big)^T,
+\end{equation}
+where $\widetilde{\theta}_{s,a}$ is an estimator of the linear loss parameter $\theta_{s,a}\in\R^d$ (see Eq.~\eqref{eq::MGR_estimate}).
+\item \textbf{Regularizer.} We use the Tsallis entropy, with 
+\[\psi_t(q)\coloneqq -\frac{H_\alpha(q)}{\eta_t}, \text{ for } H_{\alpha}(q)\coloneqq \frac{1}{\alpha}\sum_{a=1}^{K} (q_a^{\alpha}-q_a)\;,\]
+\db{Should be $\frac{1}{\alpha-1}$, I see the error is propagated from \cite{BOBWhardproblems} (below Eq. (10), but I guess in their derivations they then use the right one.}
+where $\eta_t > 0$ is the learning rate at time $t$, and we fix $\alpha := 1 - (\log K)^{-1}$. For convenience, we also define $\beta_t := 1/\eta_t$.
+\item \textbf{Additional parameters.} We set $\bar{\alpha} := 1 - \alpha$ and \[\bar{\beta} := \tfrac{32Kd\sqrt{c}}{(1-\alpha)^2\sqrt{\beta_1}\min(1,\lambda_{\min})},\] where $c, K$, and $\lambda_{\text{min}}$ are as introduced in Section~\ref{sec::setting}. The term $\beta_1=\eta_1^{-1}$ is introduced here in order to simplify some parts of the analysis, since we will define the learning rate such that $\beta_t\geq \beta_1$ holds for all time steps $t\geq 1$.
+
+% \red{[D: I don't understand, it seems from here that $\bar \beta$ is a constant, and from below it seems that $\beta_1$ is specifically tuned to make it below some value, doesn't this awful expression kinda simplify? Can we explain a bit the rational behind this weird thing? This really feels like coming out of nowhere -- Anyway, I'd prefer a detailed expression involving $K, c, \lambda_{\text{min}}$ only], N: Well it wouldn't really work to simplify it because first it doesn't really simplify that much, and second we need it because $\beta_t\geq\beta_1$ so it's defined with that intent, the rational is just that basically later everything will simplify in a proof of a lemma, there is not much more behind it}
+\end{itemize}
+
+
+
+% which relies on the following quantities:
+% \begin{itemize}
+% \item The loss estimates defined as
+% \begin{equation} \label{eq::estimator}
+%     \wh l_s(X_t) := \Big(\lan{X_t,\wh{\theta}_{s,1}},\ldots,\lan{X_t,\wh{\theta}_{s,K}}\Big)^T,
+% \end{equation}
+% where $\wh{\theta}_{s,a}$ is an estimator of the linear loss parameter $\theta_{s,a}\in\R^d$, defined in Eq.~\eqref{eq::thetahat} below.
+% \item A regularizer $\psi_t: q \mapsto -\frac{H_\alpha(q)}{\eta_t}$,
+% where $\eta_t>0$ is the learning rate at time $t$, we fix $\alpha \coloneqq 1-\log(K)^{-1}$, and let $H_\alpha$ denotes the $\alpha$-Tsallis entropy
+% \[H_\alpha: q\in \Delta_K \mapsto \frac{1}{\alpha}\sum_{a=1}^{K} (r_a^{\alpha}-r_a),\]
+% % and we setup $\alpha \coloneqq 1-\log(K)^{-1}$ (henceforth, we use $H := H_\alpha$). 
+% For convenience, we also define $\beta_t := \frac{1}{\eta_t}$.
+% \item Additional parameters $\bar{\alpha}:=1-\alpha$ and $\bar{\beta} := \tfrac{32K\sqrt{c}}{(1-\alpha)^2\sqrt{\beta_1}\min(1,\lambda_{\min})}$, where we recall that $c, K, \lambda_{\text{min}}$ are defined in Section~\ref{sec::setting}. %, and \red{[D: $\beta_1$? replace it here by it's definition, or say where it's defined.]}
+% %with \red{[Describe what $c$, $k$ (shouldn't be $K$?), $\beta_1$, and $\lambda_{\min}$ are, N : already defined in the setting section]}
+% \end{itemize}
+
+%and draws an arm $A_t$ from a FTRL distribution $q_t(\cdot|X_t)$ over actions, observing the loss $l_t(X_t,A_t)$. A subset of arms $O_t$ is drawn by independently selecting each arm $a$ with probability $p_t$ (observation probability), incurring a cost $c$ per each arm that is selected. The losses corresponding to the arms in $O_t$ are observed, and all this information is used to update the algorithmic procedure, namely to compute $q_{t+1}$ and $p_{t+1}$. The complete scheme is given in Algorithm~\ref{alg::FTRL_bobw}.
+
+% Formally, the FTRL distribution is defined as
+% \begin{equation}\label{eq::FTRL}
+%     \!\!\!q_t(\cdot|X_t) \!\in\! \underset{r \in \triangle([K])}{\arg\min}\Bigg\{\!\sum_{s=1}^{t-1}\lan{\!r,\wh{l}_s(X_t)\!} + \psi_t(r) + \bar{\beta} H_{\bar{\alpha}}(r)\!\!\Bigg\}\!
+% \end{equation}
+
+% where:
+% \begin{itemize}
+% \item The probability simplex in $K-1$ dimensions is denoted by $\triangle([K])$;
+% \item The loss estimator is defined as
+% \begin{equation} \label{eq::estimator}
+%     \wh l_s(X_t) := \Big(\lan{X_t,\wh{\theta}_{s,1}},\ldots,\lan{X_t,\wh{\theta}_{s,K}}\Big)^T,
+% \end{equation}
+% where $\wh{\theta}_{s,a}$ is an estimator of the linear loss parameter $\theta_{s,a}\in\R^d$, which we describe below;
+% \item The regularizer $\psi_t$ is defined as
+% $\psi_t(r) := -\tfrac{H_\alpha(r)}{\eta_t}$, where $\eta_t>0$ is the learning rate and the Tsallis entropy is given by
+% \[H_\alpha(r) := \frac{1}{\alpha}\sum_{a=1}^{K} (r_a^{\alpha}-r_a),\]
+% with $\alpha := 1-\log(K)^{-1}$ (henceforth, we use $H := H_\alpha$). We also note $\beta_t := \frac{1}{\eta_t}$.
+% \item We define $\bar{\alpha}:=1-\alpha$ and $\bar{\beta} := \tfrac{32K\sqrt{c}}{(1-\alpha)^2\sqrt{\beta_1}\min(1,\lambda_{\min})}$, with \red{[Describe what $c$, $k$ (shouldn't be $K$?), $\beta_1$, and $\lambda_{\min}$ are, N : already defined in the setting section]}
+% \end{itemize}
+
+
+
+
+
+
+The definition of the FTRL distribution in Eq.~\eqref{eq::FTRL} follows Algorithm~2 of \citet{BOBWhardproblems}, with two key modifications. The first, as previously discussed, is the use of loss estimates specifically adapted to the linear contextual structure of our setting.
+
+The second is the value of $\bar{\beta}$ before the second regularization term, which we use in the analysis to control the evolution of $H_\alpha(q_t)$ between rounds (see Lemma~\ref{lem::cond_bound_ht}), in particular at the beginning of the interaction (since this term doesn't scale up with $t$). This value is adjusted by the parameter $\lambda_{\min}$ to account for the impact of the context distribution in the analysis.
+
+
+%\red{[Additional related remark: would be kinda nice if the discussion gives a clear intuition about why we need two regularization terms. N: ok but i don't remember]}
+
+%Second, the loss estimator must be adapted to take care of the context, since the losses change completely depending on context. The loss estimator we consider, as defined in \eqref{eq::estimator}, is the same as used in \citep{BOBWlinear}.
+
+%We now describe the design of the estimators we consider for the linear loss parameters, the observation probability, and the learning rate schedule. The computation of the estimators can be quite expensive in terms of computational efficiency and scalability if done naively (see Appendix~\ref{sec::MGR}).
+
+
+\paragraph{Estimation of the linear losses}
+We rely on a standard importance-weighted estimator, adapted from \citet{BOBWlinear}. The key modification is that, instead of using the sampled action, we use the actions that are \emph{observed} (if any) at round $t$. Specifically, for $t \geq 1$ and $a \in [K]$, we could estimate $\theta_{t,a}$ by 
+\begin{equation}\label{eq::thetahat}
+\wh \theta_{t,a} := \Sigma_{t,a}^{-1} X_t \; l_t(X_t,a)\; \ind_{\{a \in O_t\}},
+\end{equation}
+where $\Sigma_{t,a} := \bE[\ind_{{a \in O_t}}X_tX_t^\top|\cH_t]$. However, computing $\Sigma_{t,a}^{-1}$ exactly is computationally impractical for two reasons. First, matrix inversion at every round costs $\cO(d^3)$ operations, which becomes prohibitive in high dimensions. Second, evaluating $\Sigma_{t,a}$ itself may be extremely costly: even in the discrete-context case, it requires computing observation probabilities for all possible contexts, with complexity at least $\cO(|\cX|)$, and moreover presupposes full knowledge of the context distribution.
+
+To circumvent this issue, we approximate $\Sigma_{t,a}^{-1}$ using the \emph{Matrix Geometric Resampling} (MGR) procedure, described in Algorithm~\ref{alg:MGR} (Appendix). Computationally, MGR only requires sampling $M_t$ contexts independently from $\cD$, evaluating their observation probabilities (i.e., those the algorithm would assign if the context were observed at round $t$), and performing basic algebraic operations. This reduces the dependence of the cost from $|\cX|$ to $\cO(\log(T))$, while only requesting access to a sampler of $\cD$.
+%to $\cO(d^{2}\log(T))$
+
+Accordingly, the estimator used in our algorithm is
+\begin{equation}\label{eq::MGR_estimate}
+\widetilde{\theta}_{t,a} := \Sigma_{t,a}^+ X_t \, l_t(X_t, a) \; \ind_{\{a \in O_t\}},    
+\end{equation}
+where $\Sigma_{t,a}^+$ is the approximation of $\Sigma_{t,a}^{-1}$ returned by the MGR routine. Guided by our analysis, we set the number of MGR iterations to
+\begin{equation}\label{eq::Mt}
+M_t := \left\lceil \frac{4K}{p_t \lambda_{\min}} \ln(t) \right\rceil,
+\end{equation}
+\DB{Will have to redefine this after fix}
+which ensures sufficiently accurate approximation of $\Sigma_{t,a}^+$. Compared to \citet{BOBWlinear}, where the bias of the estimator is controlled via a forced exploration rate, in our setting this role is played by the observation probability $p_t$.
+
+% \paragraph{Estimation of the linear losses} We use the following standard importance-weighted estimate, adapted from the one used by \citet{BOBWlinear} by replacing the action that is played by the actions that are effectively observed (if any) in the current round. For given $t\geq 1, a \in [K]$, we thus use 
+% \begin{equation}\label{eq::thetahat}
+%     \wh \theta_{t,a} := \Sigma_{t,a}^{-1}X_t \, l_t(X_t,a)\ind_{\{a \in O_t\}},
+% \end{equation}
+% where $\Sigma_{t,a} := \bE_t[\ind_{a \in O_t}X_tX_t^\top]$. Unfortunately, computing $\Sigma_{t,a}^{-1}$ is unreasonable for several reasons: first, the matrix inversion at each time step would require $\cO(d^3)$ computations, which is very burdensome if the dimension is large. Secondly, computing $\Sigma_{t,a}$ itself might be extremely costly. Indeed, even for a discrete context space the complexity would be $\cO(K|\cX|)$, because of the need to compute the probability of observation that would be used in each possible context, and would additionally require to know the full context distribution. 
+% For that reason, we approximate $\Sigma_{t,a}^{-1}$ via the Matrix Geometric Resampling (MGR) procedure, that we describe in Algorithm~\ref{alg:MGR} in Appendix. In terms of computations, this procedure only requires to sample $M_t$ contexts independently from the distribution $\cD$, compute their respective observation probability (that would be used by the algorithm if that context was observed at round $t$) and apart from that only requires elementary algebraic operations for a cost of $\cO(d^{XXXX})$.
+
+% The loss estimate used by our algorithm is thus
+% \[
+% \tilde{\theta}_{t,a} := \Sigma_{t,a}^+ X_t \, l_t(X_t, a) \ind_{\{a \in O_t\}},
+% \]
+% where $\Sigma_{t,a}^+$ is the approximation of $\Sigma_{t,a}^{-1}$ returned by the MGR routine. Guided by our analysis, we setup the number of iterations $M_t$ to be 
+% \begin{equation}\label{eq::Mt}
+%     M_t := \left\lceil \frac{4K}{p_t \lambda_{\min}} \ln(t) \right\rceil, 
+% \end{equation}
+% which guarantees a sufficiently accurate approximation of $\Sigma_{t,a}^+$. Compared to \citep{BOBWlinear}, the forced exploration rate is here replaced by the observation probability, which plays an analogous role in controlling estimator bias.
+
+
+
+%We define the number , that depends on a precision parameter $M_t$, defined in Eq.~\eqref{eq::Mt}.
+
+%We remark that the MGR scheme from \citep{BOBWlinear} requires a slight modification in our setting, due to the mismatch between the action set and the observation set. Instead of simulating the policy at time~$t$, we now sample the observation set using a Bernoulli variable with parameter~$p_t$.
+% \red{This is a very important point, describe our contribution in the application of the MGR procedure in our setting. Also describe what this MGR procedure allows us to achieve, i.e. what is the final computational complexity we have now? (as a function of the problem dimensionality?) N: Ok the computational complexity would be very interesting to have, but the comportment of $M_t$ is not easy at all to analyze, making it I believe impossible to really express it in the problem dimensions}
+
+\paragraph{Observation probability} Since observing each arm incurs a fixed cost $c$, 
+the observation probability $p_t$ must balance variance reduction with cost. 
+We define
+\begin{align}\label{eq::def_zt_ut}
+z_t &:= \frac{4cKd^2}{(1-\alpha)\lambda_{\min}^2}\Big(q_{t*}^{\,2-\alpha} + \sum_{i \neq I_t} q_{ti}^{\,2-\alpha}\Big), \nonumber \\
+u_t &:= \frac{8d\max(c,1)}{(1-\alpha)\lambda_{\min}}\, q_{t*}^{\,1-\alpha}, \text{ where}
+\end{align}
+\[I_t := \arg\max_{i \in [K]} q_{t,i}, \text{ and } q_{t*} := \min\{q_{t,I_t},\, 1-q_{t,I_t}\}.\] 
+\DB{$d$ here introduced artificially, redo later.}
+
+Compared to Algorithm~2 in \citep{BOBWhardproblems}, we have modified the definitions of the quantities $z_t$ and $u_t$ to include the $\lambda_{\min}$ and $d$ terms, which becomes necessary to appropriately control the variance of importance-weighted losses. %This adjustment is necessary in our setting to account for the fact that $\mathbb{E}\left[\langle X_t, \widehat{\theta}_{t,a} \rangle^2\right]$ is no longer bounded by a $\frac{1}{p_t}$, but now by $\frac{1}{p_t\lambda_{\min}}$.
+For a learning rate $\eta_t$, we then define the observation probability as
+\begin{equation}\label{Rule1}
+    p_t := \min\left\{\frac{\sqrt{z_t\eta_t} + u_t\eta_t}{cK}, 1\right\}.
+\end{equation}
+This tuning seems to differ from the one proposed in Eq.~93 of \citet{BOBWhardproblems} for their BoBW algorithm in the MAB with paid observations setting. As we explain in Section~\ref{sec::regret}, our choice avoids a factor $(\tfrac{1}{cK} + cK)$ in the regret bound, which would otherwise render the guarantee vacuous when $c$ is very small. %This discrepancy appears to stem from a minor mistake in their analysis (see Section~\ref{sec::regret} for details). 
+Moreover, Eq.~\eqref{eq::def_zt_ut} shows that without this inverse scaling in $c$, the observation probability would converge to zero for small $c$ under a fixed sampling probability, which is an unintuitive and undesirable behavior.
+
+%We believe that Equation~\eqref{Rule1} should arguably also be used in Algorithm~2 of \citep{BOBWhardproblems} to obtain optimal results. And we believe that their formula (see their Eq~93), while still giving BOBW, worsen the regret bound by a factor of $(\frac{1}{cK}+cK)$. More details are given in Section~\ref{sec::regret} \red{[Give more details. This seems a very important point to highlight our contribution but we need to spell it out.] N: Is it ok now?} \red{[D: no, it's still very unclear. We don't understand if you imply there is a mistake in their proof or not, in which case we should indicate the step in their analysis where the error occurs.]} \red{D: If I recall correctly (that they did the mistake), we should say sthg structured as "we identify an issue l.XX of their analysis --> which worsens their bound by a factor XX --> adopting our scheme instead fixes this issue."}
+
+The fact that the probability $p_t$ is uniform across arms has two important consequences for the MGR scheme. First, it removes the need for the forced exploration mechanism used in \citep{BOBWlinear} to control the bias (see their Lemma 9), and instead leads to a different result, formalized in our Lemma~\ref{lem::MGRbound}. Second, since $\Sigma_{t,a}$ is identical for all arms, we only need to compute a single pseudo-inverse $\Sigma_t^+$ per round. As a result, MGR only needs to be executed once at each time step, significantly reducing the overall computational cost.
+
+
+\paragraph{Learning rate} The learning rate $\eta_t$ balances stability and 
+adaptivity of FTRL, and is chosen to ensure optimal regret in both regimes. We follow Rule 2 of the framework presented in \citep{BOBWhardproblems} and use the update rule
+\begin{equation}\label{Rule2}
+    \frac{1}{\eta_{t+1}} = \frac{1}{\eta_{t}} + \frac{1}{h_{t}}(2\sqrt{z_{t}\eta_{t}} + u_{t}\eta_{t}),
+\end{equation}
+where $h_t$ denotes the entropy $H(q_t)$. For notational convenience we set 
+$\gamma_t = cK \cdot p_t$. We also choose $\eta_1$ to ensure that $p_t \leq \frac{1}{2}$ for all time steps,
+
+\begin{equation}\label{eq::eta1}
+    \eta_1 = \frac{(1-\alpha)\lambda_{\min}^2}{64\max(c,1)K}
+\end{equation}
+
+% \paragraph{Additional quantities} The number of MGR iterations is set to
+% \begin{equation}\label{eq::Mt}
+%     M_t := \left\lceil \frac{4K}{p_t \lambda_{\min}} \ln(t) \right\rceil
+% \end{equation}
+
+% guaranteeing a sufficiently accurate approximation of $\Sigma_{t,a}^+$. Compared to \citep{BOBWlinear}, the forced exploration rate is here replaced by the observation probability, which plays an analogous role in controlling estimator bias.
+
+\begin{algorithm}
+	\caption{FTRL for linear contextual bandits with paid observations} 
+    \label{alg::FTRL_bobw}
+	\begin{algorithmic}[1]
+        \Require $K$ arms, cost $c$, $\lambda_{\min}$, $\forall a \in [K]$
+        \State Init $\eta_1$ as in \eqref{eq::eta1}, and $\forall a \in [K]$ set $\widetilde \theta_{0,a} = 0$ 
+		\For {$t=1,2,\ldots, T$}
+			\State Observe $X_t$ and compute $q_t(\cdot|X_t)$ as in \eqref{eq::FTRL}
+ \State sample $A_t\sim q_t(\cdot|X_t)$ 
+            \State Compute $p_t$ as in \eqref{Rule1}
+            \State For each $a\!\in\![K]$, observe $l_t(X_t,a)$ with prob.\! $p_t$
+            \State Suffer the loss $l_t(X_t,A_t) + c |O_t|$
+            \State Update $\eta_t$ to $\eta_{t+1}$ according to \eqref{Rule2}
+            \State $\forall a \in [K]$, compute and store $\wt \theta_{t,a}$ via Alg.~\ref{alg:MGR}
+            \State Compute and store $\Sigma_t^+$ via MGR (see Algorithm~\ref{alg:MGR}) with $M_t$ iterations.
+		\EndFor
+	\end{algorithmic} 
+\end{algorithm}
+%\red{[D: (We might keep it this way before the deadline bc of the short time BUT) I don't think the algorithm is descriptive regarding the MGR step, in particular it is not super clean that the MGR step needs to essentially be able to compute steps 3-5 for each sampled context with the current rounds parameters (if I understand correctly!). Also, the MGR alg. in appendix is imprecise too regarding this aspect. I think we should not state "$p_t$s" as parameters but what is needed to compute any FTRL distrib (essentially $\eta_t$ and all past estimate $\widetilde \theta$).]}
+
+
+\paragraph{Computation time and memory} The total space and time complexity of Algorithm~\ref{alg::FTRL_bobw} are respectively \( \mathcal{O}(Td^2) \) and \(\mathcal{O}\left( K^2T^2 d^2 \log T \right)\). Details can be found in Appendix~\ref{AppendixAlgAnalysis}.
+
+

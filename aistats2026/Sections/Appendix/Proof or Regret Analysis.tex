@@ -1,0 +1,232 @@
+\section{PROOF OF THEOREM~\ref{thm::main}}\label{AppendixRegret}
+
+%Lemma~\ref{lem::adapt_tsuchaya} is an adaptation of Theorem~7 in \cite{BOBWhardproblems}, tailored to our setting with contexts paid observations. 
+%Its proof, provided in Appendix~\ref{Appendix}, closely follows the original argument while modifying conditions~(i) and~(ii). 
+We build on Lemma~\ref{lem::adapt_tsuchaya}, presented and proved in Appendix~\ref{Appendix}, to prove Theorem~\ref{thm::main} by verifying that Algorithm~\ref{alg::FTRL_bobw} satisfies conditions~(i)–(iv) of the lemma. We recall the theorem below, before presenting its proof. 
+
+\MainTheorem*
+
+
+\begin{proof} \DB{Tldr: all this part is shit because it mixes using fixed context and current context, with ambiguous notation that doesn't allow to understand in which case we are.}
+We verify that Algorithm~\ref{alg::FTRL_bobw} satisfies the four conditions of Lemma~\ref{lem::adapt_tsuchaya}.
+
+%\red{In this proof there should be the sentence we discussed by chat about using exact loss estimates vs MGR approximation. The reader should clearly see that/why below you use $\widehat \theta$ while in the presentation the alg uses $\widetilde \theta$.}
+
+Throughout this proof, we work with the \emph{exact} loss estimates $\widehat{\theta}_{t,a}$ defined in Eq.~\eqref{eq::estimator}, rather than their MGR approximations $\widetilde{\theta}_{t,a}$ used in the algorithmic description. 
+This distinction is only technical and does not affect the regret order, since Lemma~\ref{lem::boundBias} guarantees that the cumulative bias introduced by the MGR approximation remains uniformly bounded.
+
+\noindent\textbf{Condition (i).} 
+By definition of the importance-sampled loss (Eq.~\eqref{eq::estimator}), 
+for any $a \in [K]$ we have
+\[
+|\wh{\ell}_{t,a} \eta_t|
+\le \frac{\ell_{t,a}\eta_t}{p_t \lambda_{\min}}
+\le \frac{1}{u_t \lambda_{\min}}
+\le \frac{1 - \alpha}{8} 
+\cdot \frac{1}{\min(q_{t,a_t^\star}, 1 - q_{t,a_t^\star})^{1 - \alpha}}.
+\]
+Hence, the scaled losses $\wh{\ell}_t \eta_t$ satisfy the condition of Lemma~\ref{lem::ub_ftrl_technical}, presented in Appendix~\ref{Appendix}, which provides an upper bound on the penalty term 
+\(\langle q_t - q_{t+1}, \wh{\ell}_t(x)\rangle - D_t(q_{t+1},q_t)\) 
+appearing in the standard FTRL regret decomposition.
+
+\DB{Imo, has to be re-written from the start with the ghost sample $x$ and with the estimates $\wt \theta_{t,a}$ actually used by FTRL.}
+Since the regret is defined by 
+\[
+R_T = 
+\mathbb{E}\!\left[ 
+\sum_{t=1}^T 
+\left( 
+\langle X_t, \theta_{t,A_t} \rangle 
+- \langle X_t, \theta_{t,\pi^\star(X_t)} \rangle 
+\right) 
++ cK \sum_{t=1}^T p_t
+\right],
+\]
+and $\wh{\theta}_{t,a}$ is an unbiased estimator of $\theta_{t,a}$, we can equivalently write
+\[
+R_T =
+\mathbb{E}\!\left[
+\sum_{t=1}^T 
+\left(
+\langle X_t, \wh{\theta}_{t,A_t} \rangle 
+- \langle X_t, \wh{\theta}_{t,\pi^\star(X_t)} \rangle 
+\right)
++ cK \sum_{t=1}^T p_t
+\right].
+\]
+\DB{This is wrong without using the ghost sample technique, cause the estimates depend on $X_t$ (with some $X_0$, it's OK).}
+
+Fix any context $x \in \mathbb{R}^d$.  
+Applying Lemma~\ref{lem::standard_regret_decompo}, we obtain:
+\begin{align*}
+\sum_{t=1}^T 
+\left( 
+\langle x, \wh{\theta}_{t,A_t} \rangle 
+- \langle x, \wh{\theta}_{t,\pi^\star(x)} \rangle 
+\right)
+\le
+&\quad\underbrace{
+\sum_{t=1}^T \big( \psi_t(q_{t+1}(.|x)) - \psi_{t+1}(q_{t+1}(.|x)) \big)
+}_{\text{stability}} \\[0.3em]
+&+ 
+\underbrace{
+\sum_{t=1}^T \big( 
+\langle q_t(.|x) - q_{t+1}(.|x), \wh{\ell}_t(x) \rangle 
+- D_t(q_{t+1}(.|x), q_t(.|x))
+\big)
+}_{\text{penalty}} 
++ A + \bar{\beta}\bar{h},
+\end{align*}
+where $A = \psi_{T+1}(\pi^\star(\cdot|x)) - \psi_1(q_1(\cdot|x)) \le \beta_1 \log K$ is independent of $T$ and will be ignored in the sequel (together with $\bar{\beta}\bar{h}$).
+
+\paragraph{Bounding the stability term.}
+By the definition of $\psi_t$, we have
+\[
+\sum_{t=1}^T 
+\big( \psi_t(q_{t+1}(.|x)) - \psi_{t+1}(q_{t+1}(.|x)) \big)
+\le 
+\sum_{t=1}^T 
+\Big( \frac{1}{\eta_{t+1}} - \frac{1}{\eta_t} \Big) h_{t+1}.
+\]
+\DB{Now here this is were messing up with the notation is confusing: above check which components should depend on $x$.}
+Reindexing $t \mapsto t-1$ yields the equivalent form
+\[
+\sum_{t=1}^T 
+\Big( \frac{1}{\eta_t} - \frac{1}{\eta_{t-1}} \Big) h_t.
+\]
+
+\paragraph{Bounding the penalty term.}
+Using Lemma~\ref{lem::ub_ftrl_technical} together with Lemma~\ref{lem::bound_squared_loss}, we have
+\begin{align}
+\sum_{t=1}^T 
+\big(
+\langle q_t - q_{t+1}, \wh{\ell}_t(x) \rangle 
+- D_t(q_{t+1}, q_t)
+\big) 
+&= 
+\sum_{t=1}^T 
+\frac{1}{\eta_t}
+\left(
+\langle q_t - q_{t+1}, \wh{\ell}_t(x)\eta_t \rangle
+- D_t(q_{t+1}, q_t)
+\right) \nonumber\\
+&\le
+\sum_{t=1}^T 
+\frac{4 \eta_t}{1 - \alpha}
+\left(
+q_{t,a_t^\star}^{2 - \alpha} \wh{\ell}_{t, a_t^\star}^2
++ \sum_{a \neq a_t^\star} q_{t,a}^{2 - \alpha} \wh{\ell}_{t,a}^2
+\right) \label{eq::bad_conditioning} \\
+&\le
+\sum_{t=1}^T 
+\frac{4 d^2 \eta_t}{p_t (1 - \alpha) \lambda_{\min}^2}
+\left(
+q_{t,a_t^\star}^{2 - \alpha}
++ \sum_{a \neq a_t^\star} q_{t,a}^{2 - \alpha}
+\right). \nonumber
+\end{align}
+\DB{Isn't there some $\min(q,1-q)$ at some point in lemma 3? Otherwise why split between $a_t^\star$ and $a\neq a_t^\star$. Not consistent}
+
+\DB{More important: lemma 2 bounds $\bE[\widehat l_{t, a}^2]$ while here you should have a bound on $\bE[q_{t,a}^{2-\alpha} \cdot \widehat\ell_{t, a}^2]$. Transposing previous works we would work on $\bE[\sum_{a=1}^K q_{t,a}^{2-\alpha} \cdot \widehat\ell_{t, a}^2]$ directly.}
+
+Taking expectations over the random context $X_t$, we obtain
+\begin{align*}
+\mathbb{E}[R_T]
+&\le 
+\mathbb{E}\Bigg[
+\sum_{t=1}^T 
+\Big( \frac{1}{\eta_t} - \frac{1}{\eta_{t-1}} \Big) h_t \\
+&\quad +
+\sum_{t=1}^T
+\frac{4 d^2 \eta_t}{p_t (1 - \alpha) \lambda_{\min}^2}
+\Big(
+q_{t,a_t^\star}^{2 - \alpha}
++ \sum_{a \neq a_t^\star} q_{t,a}^{2 - \alpha}
+\Big)
++ cK \sum_{t=1}^T p_t
+\Bigg],
+\end{align*}
+which matches the required structure of condition~(i).
+
+\DB{It seems we should not be doing that but instead use a ghost sample to define the regret as in \cite{BOBWhardproblems, BOBWlinear}.}
+
+\paragraph{Condition (ii).}
+Condition~(ii) follows directly from Lemma~\ref{lem::cond_bound_ht}, presented and proved in Appendix~\ref{Appendix}, which guarantees that
+\[
+\mathbb{E}[h_{t+1} \mid \mathcal{H}_t]
+\le 
+2 \, \mathbb{E}[h_t \mid \mathcal{H}_{t-1}],
+\qquad \forall t \ge 1.
+\]
+
+\paragraph{Conditions (iii) and (iv).}
+Lemma~13 of \cite{BOBWhardproblems} provides an upper bound on the entropy term,
+\[
+h_t \le \frac{1}{\alpha}(K-1)^{1-\alpha} (1 - q_{t,a_t^\star})^{\alpha},
+\]
+where $a_t^\star := \text{arg max}_{a \in [K]} \langle X_t, \theta_{t,a} \rangle$ denotes the optimal arm for context $X_t$.
+Moreover, using the definitions of $z_t$ and $u_t$, we obtain:
+\begin{align*}
+z_t
+&= \frac{4 c K d^2}{(1 - \alpha) \lambda_{\min}^2}
+\left(
+\sum_{a \neq a_t^\star} q_{t,a}^{2 - \alpha}
++ (\min(q_{t,a_t^\star}, 1 - q_{t,a_t^\star}))^{2 - \alpha}
+\right) \\
+&\le 
+\frac{8 c K d^2}{(1 - \alpha) \lambda_{\min}^2}
+(1 - q_{t,a_t^\star})^{2 - \alpha}.
+\end{align*}
+Combining the bounds on $h_t$ and $z_t$ yields
+\begin{align*}
+z_t h_t 
+&\le 
+\frac{8 c K d^2 (K-1)^{1-\alpha}}{\alpha(1-\alpha)\lambda_{\min}^2}
+(1 - q_{t,a_t^\star})^2,\\
+u_t h_t 
+&\le 
+\frac{8 d \max(c,1)}{(1-\alpha)\alpha}(K-1)^{1-\alpha}
+(1 - q_{t,a_t^\star}).
+\end{align*}
+Hence, both conditions are satisfied with
+\begin{align*}
+\sqrt{z_t h_t} &\le \sqrt{\rho}\,(1 - q_{t,a_t^\star}),\\
+u_t h_t &\le \rho\,(1 - q_{t,a_t^\star}),
+\end{align*}
+where
+\[
+\rho := 
+\frac{d}{\lambda_{\min}}
+\max\!\left(
+\sqrt{\frac{8cK(K-1)^{1-\alpha}}{\alpha(1-\alpha)}},
+\frac{8 \max(c,1)}{(1-\alpha)\alpha}(K-1)^{1-\alpha}
+\right).
+\]
+
+\paragraph{Conclusion.}
+Having verified conditions~(i)–(iv), we can invoke Lemma~\ref{lem::adapt_tsuchaya} to conclude that Algorithm~\ref{alg::FTRL_bobw} enjoys a Best-of-Both-Worlds (BoBW) regret guarantee.  
+To make the constants explicit, note that
+\[
+h_{\max} \le \frac{K^{1-\alpha}}{\alpha}, \qquad
+z_{\max} = \mathcal{O}\!\left(\frac{cK d^2}{(1 - \alpha)\lambda_{\min}^2}\right), \qquad
+u_{\max} = \mathcal{O}\!\left(\frac{d \max(c,1)}{1 - \alpha}\right).
+\]
+Plugging these into Lemma~\ref{lem::adapt_tsuchaya} gives
+\begin{align*}
+\text{Adversarial regime: } &
+R_T = \mathcal{O}\!\left(
+\left( \frac{cK d^2}{\lambda_{\min}^2} \right)^{1/3} T^{2/3}
++ \sqrt{ \frac{d \max(c,1) T}{\lambda_{\min}} }
+\right),\\
+\text{Corrupted stochastic regime: } &
+R_T = \mathcal{O}\!\left(
+\frac{d \sqrt{\max(c,1)K}}{\lambda_{\min}\deltamin^2}\log(T\deltamin^3)
++ \left(
+\frac{C^2 d \sqrt{\max(c,1)K}}{\lambda_{\min}\deltamin^2}
+\log\!\frac{T\deltamin}{C}
+\right)^{1/3}
+\right).
+\end{align*}
+
+This completes the proof of Theorem~\ref{thm::main}.
+\end{proof}

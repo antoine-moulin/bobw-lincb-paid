@@ -1,0 +1,193 @@
+\section{PROOF OF LEMMA~\ref{lem::adapt_tsuchaya}}\label{Appendix}
+
+\adath*
+
+\begin{proof}[Proof of Lemma~\ref{lem::adapt_tsuchaya}]
+The argument follows the same general structure of the proof of Theorem~7 in \cite{BOBWhardproblems}. 
+We first define
+\[
+\gamma'_t := \gamma_t - \frac{u_t}{\beta_t} = \sqrt{\frac{z_t}{\beta_t}}.
+\]
+%Note that $\gamma'_t \le \gamma_t$ by definition. 
+
+Starting from the regret decomposition given by Assumption~(i) of the lemma, we have:
+\begin{align*}
+R_T 
+&\leq \mathbb{E}\Bigg[\sum_{t=1}^T \Big( 
+\Big(\frac{1}{\eta_t} - \frac{1}{\eta_{t-1}}\Big) h_t 
++ \frac{z_t \eta_t}{\gamma_t}
++ \gamma_t \Big)  \Bigg] + \bar{\beta}\bar{h}
+\\
+&\text{\small (by Assumption (i) of the lemma)} \\[0.4em]
+&= \mathbb{E}\Bigg[\sum_{t=1}^T \Big( 
+(\beta_t - \beta_{t-1}) h_t 
++ \frac{z_t \eta_t}{\gamma_t} 
++ \gamma_t \Big) \Bigg]+ \bar{\beta}\bar{h}
+\end{align*}
+
+where we used $\beta_t = 1/\eta_t$ and $\bar{h} = \max_{p \in \Delta_K} H_{\bar{\alpha}}(p)$.
+We now replace $\gamma_t$ by $\gamma'_t \le \gamma_t$ to simplify the analysis (this may loosen the bound slightly but keeps the algebra tractable):
+\begin{align*}
+R_T 
+&\leq \mathbb{E}\Bigg[\sum_{t=1}^T \Big( 
+(\beta_t - \beta_{t-1}) h_t 
++ \frac{z_t \eta_t}{\gamma'_t} 
++ \gamma_t \Big) \Bigg]+ \bar{\beta}\bar{h} \\[0.4em]
+&= \sum_{t=1}^T \mathbb{E}\!\left[ 
+(\beta_t - \beta_{t-1}) h_t 
++ \frac{z_t \eta_t}{\gamma'_t} 
++ \gamma_t \right]
++ \bar{\beta}\bar{h}
+\end{align*}
+
+\paragraph{Bounding the first term.}
+We first upper bound $\sum_{t=1}^T \mathbb{E}[(\beta_t - \beta_{t-1}) h_t]$.  
+By the tower rule and the fact that $(\beta_t - \beta_{t-1})$ is $\mathcal{H}_{t-1}$-measurable, we have
+\begin{align*}
+\sum_{t=1}^T \mathbb{E} \!\left[ (\beta_t - \beta_{t-1}) h_t \right] 
+&= \sum_{t=1}^T \mathbb{E} \!\left[ 
+(\beta_t - \beta_{t-1}) \, 
+\mathbb{E}[h_t \mid \mathcal{H}_{t-1}] \right].
+\end{align*}
+Then, by Assumption~(ii), which ensures 
+$\mathbb{E}[h_t \mid \mathcal{H}_{t-1}] \le 2 \, \mathbb{E}[h_{t-1} \mid \mathcal{H}_{t-2}]$, we get:
+\begin{align*}
+\sum_{t=1}^T \mathbb{E} \!\left[ (\beta_t - \beta_{t-1}) h_t \right]
+&\le 2 \sum_{t=1}^T \mathbb{E}\!\left[ (\beta_t - \beta_{t-1}) h_{t-1} \right].
+\end{align*}
+
+\paragraph{Bounding the remaining terms.}
+Using the definitions of $\gamma_t$ and $\gamma_t'$, namely
+$\gamma'_t = \sqrt{z_t / \beta_t}$ and $\gamma_t = \gamma'_t + u_t / \beta_t$, we have
+\begin{align}\label{eq::critical step}
+\sum_{t=1}^T \mathbb{E}\!\left[\frac{z_t \eta_t}{\gamma'_t} + \gamma_t \right]
+&= \sum_{t=1}^T \mathbb{E}\!\left[
+\sqrt{\frac{z_t}{\beta_t}} + 
+\Big( \sqrt{\frac{z_t}{\beta_t}} + \frac{u_t}{\beta_t} \Big) \right] \\
+&\le \sum_{t=1}^T \mathbb{E}\!\left[
+2\sqrt{\frac{z_t}{\beta_t}} + \frac{u_t}{\beta_t} \right]. \nonumber
+\end{align}
+
+Combining the two results above, we obtain:
+\[
+R_T \le 
+\mathbb{E}\!\left[
+F(\beta_{1:T}, z_{1:T}, u_{1:T}, h_{0:T-1})
+\right]
++ \mathbb{E}[\bar{\beta}\bar{h}],
+\]
+where we define
+\[
+F(\beta_{1:T}, z_{1:T}, u_{1:T}, h_{1:T})
+:= \sum_{t=1}^T 
+\left(
+(\beta_t - \beta_{t-1}) h_t
++ 2\sqrt{\frac{z_t}{\beta_t}}
++ \frac{u_t}{\beta_t}
+\right).
+\]
+Note that the regret upper bound we obtained at this step involves the sequence $h_{0:T-1}$, and not $h_{1:T}$ as in the above definition.  
+
+
+\paragraph{Adversarial regime}
+Using Lemma~\ref{hardthm6},
+we obtain that, for any $\epsilon \ge 1/T$,
+\begin{align*}
+F(\beta_{1:T}, z_{1:T}, u_{1:T}, h_{0:T-1})
+&\le \left( 
+\left[ \sum_{t=1}^T \sqrt{z_t h_t} \right] 
+\log(\epsilon T)
+\right)^{2/3} \\
+&\quad + \sqrt{
+\left[ \sum_{t=1}^T u_t h_t \right]
+\log(\epsilon T)
+} \\
+&\quad + 
+\left( \frac{\sqrt{z_{\max} h_1}}{\epsilon} \right)^{2/3}
++ \sqrt{ \frac{u_{\max} h_1}{\epsilon} }
++ \kappa.
+\end{align*}
+
+Substituting this into the previous inequality gives the claimed regret bound for the adversarial case:
+\begin{align*}
+R_T \le &
+\left( 
+\mathbb{E}\left[\sum_{t=1}^T \sqrt{z_t h_t}\right]
+\log(\epsilon T)
+\right)^{2/3} 
++ 
+\sqrt{
+\mathbb{E}\left[\sum_{t=1}^T u_t h_t\right]
+\log(\epsilon T)
+} \\
+& + 
+\left( \frac{\sqrt{z_{\max} h_1}}{\epsilon} \right)^{2/3}
++ 
+\sqrt{ \frac{u_{\max} h_1}{\epsilon} }
++ \kappa.
+\end{align*}
+Setting $\epsilon = 1/T$ yields the desired bound in the adversarial regime.
+
+\paragraph{Stochastic regime.}
+We now turn to the stochastic case, under Assumptions~(iii)–(iv). 
+Define
+\[
+\varrho_0(\pi^\star_T) 
+:= \sum_{t=1}^T 
+\left( 1 - q_t(\pi^\star_T(X_t) \mid X_t) \right).
+\]
+%\red{$\pi^\star$ should be replaced by $\pi^\star_T$ below}
+By Assumptions~(iii)–(iv),
+\begin{align*}
+\mathbb{E}\!\left[\sum_{t=1}^T \sqrt{z_t h_t}\right]
+&\le \sqrt{\rho} \cdot \varrho_0(\pi_T^\star), \\
+\mathbb{E}\!\left[\sum_{t=1}^T u_t h_t\right]
+&\le \rho \cdot \varrho_0(\pi_T^\star).
+\end{align*}
+Furthermore, Lemma~21 of \cite{BOBWlinear} gives the lower bound
+\[
+R_T \ge \frac{\deltamin}{2} \, \mathbb{E}[\varrho_0(\pi^\star)] - 2C.
+\]
+
+Balancing both bounds using any $\lambda \in (0,1]$, and applying the inequalities 
+$a x^2 - b x^3 \le \tfrac{4 a^3}{27 b^2}$ 
+and 
+$a x - b x^2 \le \tfrac{a^2}{4b}$ 
+(for $a \ge 0$, $b > 0$), 
+we obtain after simplification:
+\begin{align*}
+R_T \lesssim
+&\frac{(1+\lambda)^3}{\lambda^2} 
+\cdot \frac{\rho \log(\epsilon T)}{\deltamin^2}
++ \frac{(1+\lambda)^2}{\lambda} 
+\cdot \frac{\rho \log(\epsilon T)}{\deltamin} \\
+&\quad + 
+\left( \frac{\sqrt{z_{\max} h_1}}{\epsilon} \right)^{2/3}
++ \sqrt{ \frac{u_{\max} h_1}{\epsilon} }
++ \kappa + 2\lambda C.
+\end{align*}
+
+Choosing $\lambda = \Theta\!\left( 
+\left( \tfrac{\rho \log(\epsilon T)}{C} \right)^{1/3}
+\right)$ 
+and setting $\epsilon = 1 / (\rho^2/\deltamin^3 + C\rho/\deltamin) \le 1/T$
+gives, for $T \ge \tau := \tfrac{1}{\deltamin^3} + \tfrac{C}{\deltamin}$,
+\begin{align*}
+R_T \lesssim
+&\frac{\rho}{\deltamin^2} 
+\log_+\!\left( T\deltamin^3 \right)
++ 
+\left(
+\frac{C^2 \rho}{\deltamin^2}
+\log_+\!\left( \frac{T\deltamin}{C} \right)
+\right)^{1/3} \\
+&+ 
+\left( (z_{\max} h_1)^{1/3}
++ \sqrt{u_{\max} h_1} \right)
+\left( \frac{1}{\deltamin^3} + \frac{C}{\deltamin} \right)^{2/3}
++ \kappa,
+\end{align*}
+which concludes the proof.
+\end{proof}
+
+

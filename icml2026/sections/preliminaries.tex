@@ -1,0 +1,74 @@
+\section{Problem Definition} \label{sec::setting}
+
+In this section we formalize the setting of \emph{linear bandits with paid observations}, and state the main assumptions used in the analysis presented in Section~\ref{sec::regret}.
+
+\paragraph{Interaction protocol.}
+The interaction between the learning agent and the environment has a total duration of $T \in \bbN$ time steps, where $T$ is unknown to the learner. Context vectors are drawn independently from a fixed distribution $\cD$ supported on a compact, full-dimensional subset $\cX \subseteq \bbR^d$. At each round $t$, the following steps occur:
+%
+\begin{enumerate}
+    \item For each action $a \in \sbr*{K} \coloneqq \scbr*{1, \ldots, K}$, the environment selects a loss parameter $\theta_{t, a} \in \bbR^d$.
+    \item A context $X_t \in \cX$ is drawn from $\cD$.
+    \item The learner observes $X_t$, chooses an action $A_t \in \sbr*{K}$, and an observation set $O_t \subseteq \sbr*{K}$.
+    \item The learner incurs loss $\ell_t \spr*{X_t,A_t} + c \abs*{O_t}$, where $\ell_t$ is a loss function that depends on the environment parameters $\spr*{\theta_{t, a}}_{a \in \sbr*{K}}$, $c > 0$ is the known unit cost of observation, and $\abs*{O_t}$ is the cardinality of the observation set. It then observes the losses $\scbr*{\ell_t \spr*{X_t, o} : o \in O_t}$.
+\end{enumerate}
+
+Following \citet{SeldinS14}, the learner may query multiple arms in each round, paying cost $c$ per queried arm. When $c = 0$, the learner is incentivized to query all arms, recovering the \emph{full-information} (or ``experts'') setting.
+
+\paragraph{Assumptions.}
+To enable algorithm design and analysis, we adopt standard assumptions from the linear contextual bandit literature \citep{BOBWlinear}:
+%
+\begin{enumerate}
+    \item \textcolor{red}{For $X \sim \cD$, $\norm*{X}_2 \leq \XMAX$} almost surely.
+    
+    \item For any $t \in \sbr*{T}$, $a \in \sbr*{K}$, $\textcolor{red}{\norm*{\theta_{t, a}}_2 \leq \THETAMAX}$.
+    
+    \item For any $t \in \sbr*{T}$, $x \in \cX$, $a \in \sbr*{K}$, $\ell_t \spr*{x, a} \in \sbr*{-1, 1}$. \antoine{inconsistent with the noise model}
+\end{enumerate}
+%
+We denote by $\Sigma = \bbE_{X \sim \cD} \sbr*{X X\transpose} \succ 0$ the covariance matrix of the context distribution, and by $\lambda_{\min} > 0$ its minimum non zero eigenvalue, assumed to be known to the learner. While the learner does not know $\cD$ in full, we assume access to independent samples from $\cD$ between rounds, for instance through a simulator.
+
+We now define how the loss $\ell_t \spr*{x, a}$ is constructed in each of the regimes considered in this work, for a given step $t \in \sbr*{T}$, context $x \in \cX$ and arm $a \in \sbr*{K}$.
+
+\paragraph{Adversarial regime.}
+The loss satisfies $\ell_t \spr*{x, a} \coloneqq \inp*{x, \theta_{t, a}}$, where $\theta_{t, a}$ is chosen by an \emph{oblivious} adversary: the entire sequence $\spr*{\theta_{t, a}}_{t \in \sbr*{T}, a \in \sbr*{K}}$ can be arbitrary, but is fixed before the interaction starts.
+
+\paragraph{Stochastic regime.}
+The loss is defined by $\ell_t \spr*{x, a} \coloneqq \inp*{x, \theta_a} + \epsilon_{t, a}$ where $\theta_a$ is a fixed, unknown parameter for each arm $a$, and $\epsilon_{t, a}$ is %an independent and bounded  
+a zero-mean random noise bounded, independent across rounds and arms.
+
+\paragraph{Corrupted stochastic regime.}
+The loss satisfies $\ell_t \spr*{x, a} \coloneqq \inp*{x,\theta_{t, a}} + \epsilon_{t, a}$, %\red{[If we mean that $\epsilon_t$ is a function of $ \spr*{X_t, a}$, then we should write it explicitly in the description that follows]} 
+, where $\epsilon_{t, a}$ is again a zero-mean random noise bounded in $\sbr*{-1, 1}$. In this regime, the adversary may corrupt the parameters over time, but only within a limited budget: there exists fixed but unknown vectors $\spr*{\theta_a}_{a \in \sbr*{K}}$ and a constant $C > 0$ such that $\sumtT \max_{a \in \sbr*{K}} \norm*{\theta_{t, a} - \theta_a}_2 \leq C$. The extreme cases $C = 0$ and $C = T$ recover, respectively, the stochastic regime and the adversarial regime (up to the presence of random noise).
+
+Let $\Pi$ denote the set of deterministic policies $\pi\colon \cX \mapsto \sbr*{K}$. We define the best policy in hindsight $\pi_T^\star$ by
+%
+\begin{equation*}
+    \pi_T^\star\colon x \in \cX \mapsto \argmin_{a \in \sbr*{K}} \bbE \sbr*{\sumtT \ell_t \spr*{x, a}},
+\end{equation*}
+%
+where potential randomness of the loss distribution. The learners' ojective is to minimize the expected cumulative regret against $\pi_T^\star$,
+%
+\begin{align} \label{eq::regret_def}
+    R_T &= \bbE \sbr*{\sumtT \spr*{\ell_t \spr*{X_t, A_t} - \ell_t \spr*{X_t, \pi_T^\star \spr*{X_t}}}}\\
+    &\quad+ \bbE \sbr*{\sumtT c \cdot \abs*{O_t}}, \nonumber
+\end{align}
+%
+where the expectation here additionally includes the learner's internal randomization.
+
+\DB{If we re-write the proof with ghost sample, explain here}
+
+\paragraph{Additional definitions.} In the (corrupted) stochastic regime, we further define, for any context $x \in \cX$,
+%
+\begin{equation*}
+    \deltamin \spr*{x} \coloneqq \min_{a \neq \pi_T^\star \spr*{x}} \inp*{x, \theta_a - \theta_{\pi_T^\star \spr*{x}}}
+\end{equation*}
+%
+and the minimum sub-optimality gap
+%
+\begin{equation*}
+    \deltamin \coloneqq \min_{x \in \cX} \deltamin \spr*{x}.
+\end{equation*}
+%
+If the distribution $\cD$ over contexts is discrete, then $\deltamin$ is always strictly positive if all arms have distinct parameters. However, in the case where $\cD$ is continuous, it is possible that $\deltamin = 0$. In such cases, stochastic regret guarantees depending on $\deltamin^{-1}$ become vacuous. Nonetheless, the adversarial regret bounds remain valid regardless of the value of $\deltamin$.
+
+We denote $\cH_t = \sigma \spr*{X_s, A_s, O_s, \scbr*{l_s \spr*{X_s, o}}_{o \in O_s}, s \leq t}$ the filtration generated by all past contexts, actions, and observed losses. Finally, we use equivalently the notation $a = \cO \spr*{b}$ or $a \lesssim b$ when there exists a constant $\omega > 0$ such that $a \leq \omega b$, where $\omega$ is independent of the following problem-dependent quantities: $T, d, K, \Sigma, \cD, C, \deltamin$.

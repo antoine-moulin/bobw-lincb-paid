@@ -1,0 +1,69 @@
+\section{INTRODUCTION}
+
+
+Multi-armed bandits (MAB) have emerged as one of the most popular models for sequential decision-making under uncertainty \citep{BanditBook, BubeckCbook12}. In this framework, a learning agent repeatedly chooses among a finite set of actions (called “arms”) and observes a noisy reward for the chosen arm, with the goal of maximizing cumulative reward over time. The appeal of the bandit model lies in its ability to capture the fundamental exploration–exploitation trade-off, 
+that can be encountered in many sequential decision-making scenarios. % such as online recommendation, clinical trials, and adaptive routing. 
+Nevertheless, the classical bandit framework does not adequately capture two aspects that arise naturally in modern interactive learning systems: the dependence of rewards on user-specific contexts, and the potential cost of acquiring feedback.
+
+An illustrative example is online content recommendation. Indeed, the quality of a recommendation depends crucially on the user who receives it: a video, news article, or product may be highly relevant to one user but uninteresting to another. This motivates the use of \emph{contextual} bandit models \citep{AbeL99, BeygelzimerLLRS11}, where the expected reward depends on a context vector that describes the user or environment. A widely studied and practically successful instance is the linear contextual bandit model \citep{LangfordZ07, LiCLS10}. %\citep{AbeL99, auer2002nonstochastic, dani2008, Abbasi-YadkoriPS11}.
+In this setting, the reward is modeled as the dot product between the observed context vector and an unknown arm-specific parameter. Linear contextual bandits offer a useful balance: they are expressive enough to capture heterogeneity in user preferences, while permitting efficient learning through regularized least-squares estimation.
+
+A second challenge is that, in practice, feedback may not be observed automatically. While in standard bandits the learner always receives the reward of the chosen arm, in recommendation systems feedback often comes only if the user provides it (e.g., through ratings or explicit reviews). Actively requesting feedback at every round is undesirable, as it may burden or annoy users. %[e.g., Kapoor and Horvitz, 2008; Knox and Stone, 2009]. 
+A natural abstraction is therefore to associate a cost with each observation, so that the learner must strategically decide when feedback is worth acquiring. This leads to the framework of bandits with paid observations, first formalized by \citet{paidobservations}.
+
+A third, orthogonal challenge is the nature of the reward-generating process. In some cases, user behavior is well modeled by a stochastic distribution, while in others it may be adversarial. Designing  Best-of-Both-Worlds (BoBW) algorithms, that are versatile enough to perform optimally under both regimes, has become a central theme in bandit research \citep{bubeck12bobw, zimmerttsallis2022, DannWZ23, BOBWhardproblems}.
+
+Motivated by these observations, in this work we introduce the setting of linear contextual bandits with paid observations, which simultaneously incorporates the challenges of contextual modeling, costly feedback acquisition, and uncertainty about the reward generation process. We design a new algorithm within the Follow-the-Regularized-Leader (FTRL) framework, extending ideas from recent advances in best-of-both-worlds algorithms for bandits \citep{BOBWlinear, BOBWhardproblems}. Our algorithm achieves regret guarantees in both stochastic and adversarial regimes, thereby solving the main challenges of the setting that we consider.
+
+Achieving Best-of-Both-Worlds (BoBW) performance in hard problems, i.e.\ problems that incur a minimax regret of $\Theta(T^{2/3})$ in the adversarial regime, is a significant challenge, as highlighted in \cite{BOBWhardproblems}. The standard approaches used in other settings often fail without substantial modifications. Fortunately, \cite{BOBWhardproblems} introduced a dedicated framework designed to facilitate the design and analysis of BoBW algorithms for such problems. \db{the following will likely change after fixing the proof.} While this framework forms the basis of our analysis, several challenges arise in adapting it to our setting. First, the general formulation assumes the existence of a single optimal arm throughout the learning process, which does not hold in the contextual linear setting where the optimal action varies with the context. Second, our setting introduces a new key parameter, the smallest non-negative eigenvalue of the context distribution ($\lambda_{\min}$), introduced in Section~\ref{sec::setting}, which necessitates specific tuning of several algorithmic parameters. Third, we identify and resolve an inconsistency in prior applications of the BoBW framework to bandits with paid observations, thereby obtaining tighter regret guarantees; we elaborate on this point in Section~\ref{sec::regret}. Structural differences in our setting require various other adjustments to the technical proofs.
+
+
+
+% Kapoor, A., & Horvitz, E. (2008). Active learning for classification from strategic labelers. NeurIPS.
+% Knox, W. B., & Stone, P. (2009). Interactively shaping agents via human reinforcement: The TAMER framework. AAMAS.
+
+% Best-of-both-worlds algorithms:
+
+% Bubeck, S., & Slivkins, A. (2012). The best of both worlds: Stochastic and adversarial bandits. COLT.
+% Seldin, Y., & Slivkins, A. (2014). One practical algorithm for both stochastic and adversarial bandits. ICML.
+% Zimmert, J., & Seldin, Y. (2019). Tsallis-INF: An optimal algorithm for stochastic and adversarial bandits. ICML.
+% Kuroki, Y., & Tsuchiya, T. (2022). Improved best-of-both-worlds bounds for bandits with Tsallis entropy regularization. NeurIPS.
+% Tsuchiya, T., Kuroki, Y., & Zimmert, J. (2023). Towards best-of-both-worlds contextual bandits. NeurIPS.
+
+
+\subsection{Detailed literature review} 
+
+In this section we detail existing results related to the different components of the settings that we consider.
+
+\paragraph{Linear Contextual Bandits} Contextual bandits extend classical multi-armed bandits by allowing the reward distribution to depend on an observed context, which can vary across rounds. To enable efficient decision-making, one must adopt a suitable model to capture how the context influences the rewards. In this work we consider the \emph{linear contextual bandit} model \citep{LangfordZ07, LiCLS10}, that we formally describe in Section~\ref{sec::setting}. This model is closely-related to the well-studied \emph{stochastic linear bandit} framework, since in both settings the average reward of each arm is given by the inner product of an arm feature vector and a parameter vector. The two formulations differ in the source of uncertainty: in stochastic linear bandits the arm features are known and the underlying parameter is unknown, whereas in (stochastic) linear contextual bandits the arm-specific features are fixed but unknown, while the context vector is revealed at the beginning of each round.
+
+Most approaches used in linear contextual bandits are borrowed from the stochastic linear bandit literature, in which algorithms follow general principles such as \emph{Optimism in Face of Uncertainty} \citep{AbeL99, DaniHK08, Abbasi-YadkoriPS11, FlynnRKP23}, \emph{Thompson Sampling} \citep{AgrawalG13TSlinear, AbeilleL17, AbeilleJP25}, \emph{Information Directed Sampling} \citep{KirschnerL020}, or (asymptotic) lower bound matching \citep{LattimoreS17, DegenneSK20}. Nonetheless, linear contextual bandits exhibit specific properties compared to standard linear bandits. In particular, \citet{BastaniBK21} showed that under suitable assumptions on \emph{context diversity}, even a simple greedy strategy can achieve logarithmic regret.
+
+While the above works assume stochastic rewards, this assumption can be restrictive in practice. To address this, \citet{NeuO20} introduced an adversarial formulation of linear contextual bandits, in which arm parameters are fixed by an oblivious adversary. They derived a $\widetilde \cO(\sqrt{KdT})$ regret bound for an exponential-weights algorithm \citep{auer2002nonstochastic}, where $d$ is the parameter dimension, $K$ is the number of arms, and $T$ is the horizon. Building on this, \citet{OlkhovskayaMENW23} obtained refined first and second-order bounds. In parallel, \citet{BOBWlinear} established the first \emph{Best-of-Both-Worlds} guarantees in this setting, showing that one can achieve simultaneously polylogarithmic regret in the stochastic regime and $\widetilde \cO(Kd\sqrt{T})$ regret in the adversarial case.
+
+
+% \paragraph{Bandit with paid observations} The work of \citet{paidobservations} introduces the setting of $K$-armed bandits with paid observations, and proposes an algorithm that matches a lower bound of $\Theta(T^{2/3})$ in the adversarial regime. \red{[Expand a bit, check if they were related/follow-up papers. Get inspiration from Tsuchiya]}
+
+\paragraph{Bandits with Paid Observations}
+This framework was introduced by \citet{SeldinS14} to capture a feedback structure lying between the standard multi-armed bandit and full-information settings. In this model, the learner may choose to observe the reward of \emph{any} arm at a fixed cost. They established that the minimax regret in this setting is $\Theta((cK)^{1/3}T^{2/3}+\sqrt{T})$, and proposed an algorithm matching this lower bound.
+
+Prior to this, several related models were proposed to account for the possibility of observing additional feedback beyond the chosen arm \citep{MannorS11, AvnerMS12, AlonCGM13}, though these formulations do not explicitly capture the cost of information acquisition. An alternative approach is to impose a \emph{budget} on the total observation cost, as in \citep{YunPASY18, EfroniMSM21}. However, this formulation requires the decision-maker to know both the acquisition cost of each arm and an overall budget, thereby placing regret minimization and acquisition costs on different scales. By contrast, the bandits-with-paid-observations framework integrates both aspects under a unified metric by directly subtracting observation costs from the rewards.
+
+
+\paragraph{Best-of-Both-Worlds (BoBW)} The design of algorithms that perform well simultaneously in stochastic and adversarial regimes has become a central theme in the bandit literature. 
+The foundational work of \citet{bubeck12bobw, SeldinS14} initiated this line of research by asking whether one can achieve logarithmic regret in the stochastic setting while retaining $\tilde{O}(\sqrt{T})$ regret in the adversarial case. Their results provided only partial success, either with suboptimal bounds or with algorithms of limited practicality. Later, \citet{zimmerttsallis2022} first obtained the optimal best-of-both-worlds guarantees in the $K$-armed bandit setting. This breakthrough has since inspired the development of BoBW algorithms across a variety of bandit problems \citep{amir2022better,RouyerHCS22, saha2022versatile, tsuchiya2023further, jin2023improved, zimmert24prod, KatoI25}. 
+
+Of particular relevance to our work, \citet{BOBWlinear} studied linear contextual bandits through the black-box reduction framework of \citet{DannWZ23}, which can be used to design BoBW algorithms for problems whose minimax regret scales as $\sqrt{T}$. More recently, \citet{BOBWhardproblems} proposed a general recipe for constructing BoBW algorithms in so-called “hard” online learning problems, namely those with minimax regret of order $\Theta(T^{2/3})$. They further show that several known bandit models, including multi-armed bandits with paid observations, fall within this framework. Our work is inspired by their approach, however, a direct application of their method does not yield optimal bounds in our setting (see Section~\ref{sec::regret}). This motivates the need for a careful adaptation of their ideas, which we develop in the remainder of the paper.
+
+
+%\red{[Shall we say something about the fact that this general framework does not directly apply to our setting, and why?]}
+
+
+
+
+
+
+
+
+
+

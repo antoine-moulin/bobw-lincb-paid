@@ -1,0 +1,17 @@
+\subsection{Technical tools}
+
+\begin{lemma}[\citealp{NeuO20}, Lemma~3] \label{lem:ghost-sample-neu}
+    Let $\pi^\star$ be a fixed stochastic policy and let $X_0$ be a sample from the context distribution $\cD$ independent from $\cH_T$. For any $t \in \sbr*{T}$, any action $a \in \sbr*{K}$, suppose that $\pi_t$ is $\cH_{t - 1}$-measurable and that $\bbE \sbr*{\wh{\theta}_{t, a} \given \cH_{t - 1}} = \theta_{t, a}$. Then, it holds that
+    %
+    \begin{equation*}
+        \bbE \sbr*{\sumtT \sumaK \spr*{\pi_t \spr*{a \given X_t} - \pi^\star \spr*{a \given X_t}} \inp*{X_t, \theta_{t, a}}} = \bbE \sbr*{\sumtT \sumaK \spr*{\pi_t \spr*{a \given X_0} - \pi^\star \spr*{a \given X_0}} \inp*{X_0, \wh{\theta}_{t, a}}}.
+    \end{equation*}
+\end{lemma}
+
+\begin{lemma} \label{lem::ftrl_regret_decomp}
+    \antoine{Exercise 28.12 from \citet{BanditBook} as a lemma + proof}
+\end{lemma}
+
+\begin{lemma}
+    \antoine{Convexity of the negative Tsallis entropy, corresponding Bregman divergence}
+\end{lemma}

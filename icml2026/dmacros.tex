@@ -1,0 +1,167 @@
+% maths stuff
+\usepackage{bm}
+\newcommand{\R}{\bbR}
+\newcommand{\N}{\mathbb{N}}
+
+% argmax and co
+\newcommand{\aargmax}{\text{argmax}}
+\newcommand{\aargmin}{\text{argmin}}
+
+% probability
+\newcommand{\bP}{\mathbb{P}}
+\newcommand{\bE}{\bbE}
+%\newcommand{\ind}{\mathds{1}}
+\usepackage{dsfont}
+\newcommand{\ind}{\mathds{1}}
+%\newcommand{\mathbbm}[1]{\text{\usefont{U}{bbm}{m}{n}#1}}
+\newcommand{\kl}{\mathrm{kl}}
+\newcommand{\dm}{\mathrm{d}}
+
+% bandit and algorithm specific notation 
+\newcommand{\K}{\{1,\dots,K\}}
+\newcommand{\SP}{\ensuremath{\mathrm{SP}}}
+\newcommand{\UCB}{\mathrm{UCB}}
+
+% algorithms
+\newcommand{\RBSSDA}{\ensuremath{\mathrm{RB}\text{-}\mathrm{SDA}}}
+\newcommand{\SSDA}{\ensuremath{\mathrm{SDA}}}
+\newcommand{\SDA}{\ensuremath{\mathrm{SDA}}}
+\newcommand{\SPSSDA}{\ensuremath{\mathrm{SP}\text{-}\mathrm{SDA}}}
+\newcommand{\WRSSDA}{\ensuremath{\mathrm{WR}\text{-}\mathrm{SDA}}}
+\newcommand{\LBSSDA}{\ensuremath{\mathrm{LB}\text{-}\mathrm{SDA}}}
+\newcommand{\LDSSSDA}{\ensuremath{\mathrm{LDS}\text{-}\mathrm{SDA}}}
+\newcommand{\sampler}{independent sampler}
+\newcommand{\RB}{\ensuremath{\mathrm{RB}}}
+\newcommand{\WR}{\ensuremath{\mathrm{WR}}}
+
+\newcommand{\GNPTS}{DS}
+\newcommand{\MCVTS}{$\alpha$-Multinomial-TS}
+\newcommand{\CVTS}{$\alpha$-NPTS}
+
+\newcommand{\CVAR}{\text{CVaR}}
+\newcommand{\kinf}{\cK_{\inf}}
+\newcommand{\kinfcv}{\cK_{\inf}^{\alpha,\cD}}
+\newcommand{\kinfcvx}{\cK_{\inf}^{\alpha,\cX}}
+\newcommand{\kinfcvxm}{\mathcal{G}_{\inf}^{\alpha,\cX}}
+\newcommand{\KL}{\mathrm{KL}}
+
+\newcommand{\Sm}{\cS_{m, \cX}^\alpha(c)}
+\newcommand{\Smp}{\cU_{m, \cX}^\alpha(c)}
+\newcommand{\Sa}{\cS_{\cX}^\alpha(c)}
+\newcommand{\Sap}{\cU_{\cX}^\alpha(c)}
+
+\newcommand{\MDir}{\hat{p}_{k,t}}
+\newcommand{\betaDir}{\hat{\beta}_{k,t}}
+\newcommand{\Dir}{\text{Dir}}
+
+% redefinition of some commands 
+\let\ln\relax
+\DeclareMathOperator{\ln}{ln}
+\let\epsilon\relax
+\DeclareMathOperator{\epsilon}{\varepsilon}
+\DeclareMathOperator*{\esssup}{ess\,sup}
+
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathreplacing,calc}
+\newcommand{\tikzmark}[1]{\tikz[overlay,remember picture] \node (#1) {};}
+
+\newcommand*{\AddNote}[4]{%
+	\begin{tikzpicture}[overlay, remember picture]
+	\draw [decoration={brace,amplitude=0.5em},decorate,ultra thick,red]
+	($(#3)!(#1.north)!($(#3)-(0,1)$)$) --  
+	($(#3)!(#2.south)!($(#3)-(0,1)$)$)
+	node [align=center, text width=2.5cm, pos=0.5, anchor=west] {#4};
+	\end{tikzpicture}
+}%
+
+\newcommand{\sgone}{\mathrm{SG}_1}
+\newcommand{\sgtwo}{\mathrm{SG}_2}
+\newcommand{\sgthree}{\mathrm{SG}_2}
+\newcommand{\gstar}{{G^*}}
+\newcommand{\napier}{\mathrm{e}}
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\e}{\mathrm{e}}
+
+\newcommand{\since}[1]{\quad\left(\mbox{#1}\right)}
+\newcommand{\rd}{\mathrm{d}}
+\newcommand{\ep}{\varepsilon}
+\newcommand{\nn}{\nonumber}
+\newcommand{\n}{\nonumber}
+
+\newcommand{\TS}{TS$^\star$}
+
+\newcommand{\red}{\textcolor{red}}
+\newcommand{\blue}{\textcolor{blue}}
+\newcommand{\Loja}{Łojasiewicz}
+
+\usepackage{soul}
+\newcommand{\revrem}[1]{\textcolor{blue}{\st{#1}}}
+
+\newcommand{\SGB}{\texttt{SGB}{ }}
+
+\newcommand{\db}[1]{\textcolor{purple}{\#DB: #1 \#}}
+
+
+
+% EJ:
+
+% round brackets
+\newcommand{\lrb}[1]{\left(#1\right)}
+\newcommand{\brb}[1]{\bigl(#1\bigr)}
+\newcommand{\Brb}[1]{\Bigl(#1\Bigr)}
+\newcommand{\bbrb}[1]{\biggl(#1\biggr)}
+\newcommand{\Bbrb}[1]{\Biggl(#1\Biggr)}
+% square brackets
+\newcommand{\lsb}[1]{\left[#1\right]}
+\newcommand{\bsb}[1]{\bigl[#1\bigr]}
+\newcommand{\Bsb}[1]{\Bigl[#1\Bigr]}
+\newcommand{\bbsb}[1]{\biggl[#1\biggr]}
+\newcommand{\Bbsb}[1]{\Biggl[#1\Biggr]}
+% curly brackets
+\newcommand{\lcb}[1]{\left\{#1\right\}}
+\newcommand{\bcb}[1]{\bigl\{#1\bigr\}}
+\newcommand{\Bcb}[1]{\Bigl\{#1\Bigr\}}
+\newcommand{\bbcb}[1]{\biggl\{#1\biggr\}}
+% ceiling
+\newcommand{\lce}[1]{\left\lceil#1\right\rceil}
+\newcommand{\bce}[1]{\bigl\lceil#1\bigr\rceil}
+\newcommand{\Bce}[1]{\Bigl\lceil#1\Bigr\rceil}
+\newcommand{\bbce}[1]{\biggl\lceil#1\biggr\rceil}
+% floor
+\newcommand{\lfl}[1]{\left\lfloor#1\right\rfloor}
+\newcommand{\bfl}[1]{\bigl\lfloor#1\bigr\rfloor}
+\newcommand{\Bfl}[1]{\Bigl\lfloor#1\Bigr\rfloor}
+\newcommand{\bbfl}[1]{\biggl\lfloor#1\biggr\rfloor}
+% abs
+\newcommand{\labs}[1]{\left\lvert#1\right\rvert}
+\newcommand{\babs}[1]{\bigl\lvert#1\bigr\rvert}
+\newcommand{\Babs}[1]{\Bigl\lvert#1\Bigr\rvert}
+\newcommand{\bbabs}[1]{\biggl\lvert#1\biggr\rvert}
+% norm
+\newcommand{\lno}[1]{\left\lVert#1\right\rVert}
+\newcommand{\bno}[1]{\bigl\lVert#1\bigr\rVert}
+\newcommand{\Bno}[1]{\Bigl\lVert#1\Bigr\rVert}
+\newcommand{\bbno}[1]{\biggl\lVert#1\biggr\rVert}
+% angle
+\newcommand{\lan}[1]{\left\langle#1\right\rangle}
+\newcommand{\ban}[1]{\bigl\langle#1\bigr\rangle}
+\newcommand{\Ban}[1]{\Bigl\langle#1\Bigr\rangle}
+\newcommand{\bban}[1]{\biggl\langle#1\biggr\rangle}
+
+\newcommand{\deltamin}{\Delta_{\text{min}}}
+\newcommand{\sube}{\subseteq}
+\newcommand{\rchi}{\raisebox{2pt}{$\chi$}}
+%%%
+
+\usepackage{comment}
+\usepackage{enumitem}
+
+% \usepackage{algorithm} 
+% \usepackage{algpseudocode}
+% \usepackage{thmtools}
+% \usepackage{thm-restate}
+
+\usepackage[textsize=tiny]{todonotes}
+\newcommand{\dodo}[2][]{\todo[color=blue!20,#1]{{\bf DB:} #2}}
+
+\newcommand{\DB}[1]{\noindent{\textcolor{red}{\textbf{\#DB: }#1\#}}}

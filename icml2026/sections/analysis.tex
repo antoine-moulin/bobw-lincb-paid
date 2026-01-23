@@ -1,0 +1,160 @@
+\section{REGRET ANALYSIS} \label{sec::regret}
+
+We now introduce the main theoretical result of this work, which is that Algorithm~\ref{alg::FTRL_bobw} achieves Best-of-Both-Worlds regret guarantees in the setting of linear bandits with paid observations, under the assumptions introduced in Section~\ref{sec::setting}.
+
+\db{We have to change the dimension dependency after the fix.}
+\begin{restatable}{theorem}{MainTheorem}\label{thm::main}
+    In the adversarial regime, the regret of Algorithm~\ref{alg::FTRL_bobw} satisfies
+    \begin{align*}
+        R_T &\lesssim \spr*{\frac{c K d^2 \log K}{\lambda_{\min}^2}}^{1/3} T^{2/3} \\
+        &\quad+ \sqrt{\frac{\max \spr*{c, 1} d \log K \cdot T}{\lambda_{\min}}} + \kappa
+    \end{align*}
+    %
+    with \antoine{$\log KT$ or $T \log K$?}
+    %
+    \begin{align*}
+        \kappa &= \sqrt{\frac{c K d^2 \log K}{\lambda_{\min}^2}} + \frac{\max \spr*{c, 1} d \log K}{\lambda_{\min}}\\
+        &\quad+ \frac{\max \spr*{c, 1} K \log K}{\lambda_{\min}^2} + \frac{32 K d \sqrt{c}}{\spr*{1 - \alpha}^2 \sqrt{\beta_1} \min \spr*{1, \lambda_{\min}}}.
+    \end{align*}
+    %
+    while in the corrupted stochastic regime with corruption level $C$, it satisfies
+    %
+    \begin{align*}
+        R_T &\lesssim \frac{d \sqrt{\max \spr*{c, 1} K \log K}}{\lambda_{\min} \deltamin^2} \cdot \log \spr*{T \deltamin^3} \\
+        &\quad+ \spr*{\frac{C^2 d \sqrt{\max \spr*{c, 1} K \log K}}{\lambda_{\min}\deltamin^2} \cdot \log \spr*{\frac{T \deltamin}{C}}}^{1/3}\\
+        &\quad+ \kappa + \kappa', \; \text{where we further define} \\
+        \kappa' &= \spr*{\spr*{\frac{c K d^2 \log K}{\lambda_{\min}^2}}^{1/3} +  \sqrt{\frac{\max \spr*{c, 1} d \log K}{\lambda_{\min}}}}\\
+        &\quad\times \spr*{\frac{1}{\deltamin^3} + \tfrac{C}{\deltamin}}^{2/3}.
+    \end{align*}
+\end{restatable}
+
+This result shows that Algorithm~\ref{alg::FTRL_bobw} achieves the minimax-optimal $\cO \spr*{T^{2/3}}$ regret in the adversarial regime, while smoothly adapting to the (possibly corrupted) stochastic regime with logarithmic dependence on $T$ when $C = 0$. These bounds match the known lower bounds from \citet{paidobservations}, which applies to our setting since it encompasses the standard multi-armed bandit (by taking $d=1$ and $X_t=1$ a.s.), and extend the Best-of-Both-Worlds (BoBW) framework of \citet{BOBWhardproblems} to the setting of linear bandits.
+
+While the dependence in $T$ is thus known to be optimal, the optimal dependence in other problem-specific parameters remains unknown, as this is the first work to address this setting. However, since our algorithm builds upon and generalizes both Algorithm~2 from \citet{BOBWlinear} and Algorithm~2 from \citet{BOBWhardproblems}, we can compare our regret bounds to theirs, even if the settings do not perfectly align. We consider first the limiting case where $c \to 0$, corresponding to the full-information setting, in which all losses are observed. In this regime, the first term of the adversarial regret bound vanishes, and we have %the dominant term becomes the one scaling as $\sqrt{dT}$, and so
+%
+\begin{equation*}
+    R_T \lesssim \sqrt{\frac{d T \log \spr*{K}}{\lambda_{\min}}}.
+\end{equation*}
+%
+This matches, up to logarithmic factors, the adversarial regret bound established for Algorithm~2 in \citet{BOBWlinear}, namely
+%
+\begin{equation*}
+    R_T\lesssim \sqrt{T \spr*{d + \frac{\log T}{\lambda_{\min}}} K \log K \log T}.
+\end{equation*}
+%
+In our case, the factor $K$ is replaced by $\log K$, which reflects the full-information nature of our setting, a standard improvement in such regimes. However, in the stochastic regime, our regret exhibits an additional $\frac{1}{\deltamin}$ factor compared to the full-information bounds in \citet{BOBWlinear}. But on the countrary, our algorithm has a better $\log T$ dependence, thus our bound is better if $T$ is significantly larger than $\frac{1}{\deltamin}$. However, we do not know whether our improved $\log T$ dependency stems from being in the full-information setting or from other factors. We can at least observe that the dependence on the setting-specific parameters $d$ and $\lambda_{\min}$ in our bounds matches that of their Algorithm~2.
+
+Another useful comparison is to consider the special case $d = 1, \cX = \scbr*{1}$, %swhere the context space has size one, which implies \( \lambda_{\min} = 1 \).
+in which case we recover the setting of \citet{SeldinS14}.
+%, similar to Algorithm~2 from \citep{BOBWhardproblems}.
+From their Corollary~17,  Algorithm~2 of \citet{BOBWhardproblems} obtain an adversarial regret bound of
+%
+\begin{equation*}
+    R_T \lesssim \spr*{\spr*{c K}^{1/3} T^{2/3} \spr*{\log K}^{1/3}},
+\end{equation*}
+%
+which is exactly the scaling that we obtain with Theorem~\ref{thm::main} in this setting. This observation furthermore still holds in the stochastic setting.
+
+These comparisons suggest that, while we can not establish optimality in general due to the lack of known lower bounds, our algorithm can be viewed as a strict generalization of the approach in \citet{BOBWhardproblems} for bandits with paid observations, since we recover their guarantees in this setting. Moreover, since the dependencies in $d$ and $\lambda_{\min}$ are known to be optimal compared to previous approaches when $c = 0$, this further supports the relevance of our design beyond prior approaches.
+
+A detailed proof of the theorem can be found in Appendix~\ref{AppendixRegret}. In the following, we present the main steps of the proofs, highlighting the technical arguments that required to be adapted from the existing frameworks.
+
+\begin{proof}[Proof sketch]
+    As a preliminary step of the analysis, we isolate the difficulty induced by the use of (biased) MGR estimates (Eq.~\eqref{eq::MGR_estimate}) instead of using the unbiased estimators from Eq.~\eqref{eq::estimator}. Following the proof technique of \citet{BOBWlinear}, we introduce an auxiliary game where these estimators are treated as unbiased, and for which the regret would thus become
+    %
+    \begin{equation*}
+        \tilde{R}_T \coloneqq \bbE \sbr*{\sumtT \inp*{X_t, \tilde{\theta}_{t, A_t}} - \inp*{X_t, \tilde{\theta}_{t, \pi^\star \spr*{X_t}}}}.
+    \end{equation*}
+    %
+    We can verify that the actual regret of our algorithm thus satisfies
+    %
+    \begin{equation*}
+        R_T \leq \tilde{R}_T + 2 \sumtT \max_{a \in \sbr*{K}} \abs*{\bbE \sbr*{\inp*{X_t, \tilde{\theta}_{t, a} - \theta_{t, a}}}}.
+    \end{equation*}
+    %
+    Then, in Lemma~\ref{lem::boundBias} we prove that the second term of this upper bound can be upper bounded by a constant, independent of all problem parameters. In the following, we thus focus on upper bounding $\tilde{R}_T$. We write the following proof steps with the notation $R_T$, with an abuse of notation, since previous result showed that both terms have the same scaling in $T$.
+
+    The remainder of the analysis builds on the general framework introduced by \citet{BOBWhardproblems} to build Best-of-Both-Worlds algorithms for problems with minimax regret scaling with $T^{2 / 3}$, and in particular their instantiation of this framework to tackle standard multi-armed bandit with paid observations (without the linear contextual structure). Our first contribution is an adaptation of their Theorem 7 to accommodate the linear contextual structure, that we introduce below.
+    %
+    \begin{restatable}[Adaptation of Theorem~7 of \citealp{BOBWhardproblems}]{lemma}{adath} \label{lem::adapt_tsuchaya}
+        Suppose that Algorithm~\ref{alg::FTRL_bobw} satisfies the following conditions in the adversarial regime:
+        %
+        \begin{enumerate}[label=(\roman*),ref=(\roman*)]
+            \item $R_T \leq \sumtT \bbE \sbr*{\spr*{\tfrac{1}{\eta_t} - \tfrac{1}{\eta_{t - 1}}} h_t + \tfrac{z_t \eta_t}{\gamma_t} + \gamma_t} + \bar{\beta} \bar{h}$,
+            
+            \item $\bbE \sbr*{h_{t+1} \given \cH_t} \leq 2 \bbE \sbr*{h_t \mid \cH_{t - 1}}$ for all $t \geq 1$.
+        \end{enumerate}
+        %
+        Then the regret can be bounded as
+        %
+        \begin{equation*}
+            R_T \lesssim \spr*{z_{\max} h_1}^{1/3} T^{2/3} + \sqrt{u_{\max} h_1 T} + \kappa,
+        \end{equation*}
+        %
+        where
+        %
+        \begin{align*}
+            z_{\max} &= \max_{t \in \sbr*{T}} z_t \leq 4 c K \log K \frac{1}{\lambda_{\min}^2},\\
+            u_{\max} &= \max_{t \in \sbr*{T}} u_t \leq 4 \max \spr*{c, 1} \log K \frac{1}{\lambda_{\min}},
+        \end{align*}
+        %
+        and
+        %
+        \begin{equation*}
+            \kappa \coloneqq \sqrt{z_{\max} \eta_1} + u_{\max} \eta_1 + \tfrac{h_1}{\eta_1} + \bar{\beta} h_{\max}.
+        \end{equation*}
+        %
+        Moreover, if Algorithm~\ref{alg::FTRL_bobw} satisfies the following conditions in the stochastic regime: there exists a constant $\rho > 0$ such that, for any $t \geq 1$,
+        %
+        \begin{enumerate}[label=(\roman*),ref=(\roman*),start=3]
+            \item $\sqrt{z_t h_t} \leq \sqrt{\rho}\spr*{1 - q_t \spr*{\pi_T^\star \spr*{X_t} \given X_t}}$, and
+            \item $u_t h_t \leq \rho\,\spr*{1 - q_t \spr*{\pi_T^\star \spr*{X_t} \given X_t}}$, 
+        \end{enumerate}
+        %
+        then, for $T \geq \tau \coloneqq \tfrac{1}{\deltamin^3} + \tfrac{C}{\deltamin}$ it holds that
+        %
+        \begin{align*}
+            R_T &\lesssim \frac{\rho}{\deltamin^2} \log \spr*{T \deltamin^3} + \spr*{\tfrac{C^2 \rho}{\deltamin^2} \log \spr*{\tfrac{T \deltamin}{C}}}^{1/3}
+            + \kappa'
+        \end{align*}
+        %
+        with
+        %
+        \begin{equation*}
+            \kappa' \coloneqq \kappa + \spr*{\spr*{z_{\max} h_1}^{1/3} + \sqrt{u_{\max} h_1}} \spr*{\tfrac{1}{\deltamin^3} + \tfrac{C}{\deltamin}}^{2/3}.
+        \end{equation*}
+    \end{restatable}
+    %
+    While Lemma~\ref{lem::adapt_tsuchaya} adapts Theorem 7 from \citet{BOBWhardproblems}, it differs in several significant aspects. First, condition~(i) is new and replaces conditions~(i)--(ii) in the original theorem, and both lead to a similar proof structure, our condition better adjust the framework to our setting. Second, condition~(ii) is a relaxed reformulation of condition~(iii) in \citet{BOBWhardproblems}, which is necessary to handle the stochasticity of contexts in our setting. With careful use of the tower rule, we show that this weaker assumption is sufficient for the regret analysis. Finally, conditions~(iii) and (iv) are reformulations of conditions~(iv) and (v) from \citet{BOBWhardproblems}, and the corresponding proof techniques carry over with only little modifications. The detailed proof of this lemma is deferred to Appendix~\ref{Appendix}.
+
+    To establish Theorem~\ref{thm::main}, it then suffices to verify that Algorithm~\ref{alg::FTRL_bobw} satisfies each of the four conditions. 
+
+    Condition~(i) follows from the standard FTRL regret decomposition: the stability term bound is direct to obtain, while the penalty term is controlled using Lemma~\ref{lem::ub_ftrl_technical} (in Appendix)% on $|l_t\eta_t|$
+    , which is similarly to the proof of \citet[Theorem 8]{BOBWhardproblems}. 
+
+    We prove condition~(ii) in Lemma~\ref{lem::cond_bound_ht}. The proof consists in applying Lemma 15 from \citet{BOBWhardproblems} (restated as Lemma~\ref{lem::ftrl_smooth_bound}) for each fixed context, and to conclude via linearity of expectation. A key challenge arises from the fact that, in our setting, we have the bound $\bbE\left[\langle X_t, \hat{\theta}_{t, a} \rangle^2\right] \leq \frac{1}{\lambda_{\min}^2 p_t}$, which contrasts with the original bound $\bbE\left[\ell_t^2\right] \leq \frac{1}{p_t}$ in the non-contextual case. Since Lemma~\ref{lem::ftrl_smooth_bound} only accommodates a constant upper bound, this discrepancy required a careful adjustment of several parameters, specifically $u_t$ and $\bar{\beta}$, which represents a slight modification in the precise behavior of the algorithm.
+
+    Finally, conditions~(iii) and (iv) are verified by combining entropy bounds from \citet{BOBWhardproblems} with direct control of the variance-like quantities $z_t$ and $u_t$, thereby linking them to the optimal action probability.  
+
+    Together, these arguments ensure that Algorithm~\ref{alg::FTRL_bobw} satisfies the assumptions of Lemma~\ref{lem::adapt_tsuchaya}, which directly yields the regret guarantees stated in Theorem~\ref{thm::main}.
+
+    The full derivations and supporting lemmas are deferred to Appendix~\ref{AppendixRegret}, where we carefully establish that each condition of the lemma holds in our setting. 
+\end{proof}
+
+While the definition of $p_t$ in \citet{BOBWhardproblems} differs from ours by a factor $\spr*{c K}^{-1}$, this appears to be a simple typo in their presentation. Indeed, their analysis assumes $p_t = \frac{1}{c K} \spr*{\sqrt{z_t \eta_t} + u_t \eta_t}$, even though the statement of their Algorithm~2 defines $p_t \coloneqq \sqrt{z_t \eta_t} + u_t \eta_t$. %However, this normalization is necessary to ensure consistency with their analysis, which assumes \( \gamma_t = cK p_t = \sqrt{z_t \eta_t} + u_t \eta_t \). 
+We can use this observation to comment on the optimality of the tuning of $p_t$ with respect to the analysis used to derive BoBW regret bounds for our algorithm.
+
+Indeed, a step in the analysis (see Eq.~\eqref{eq::critical step}) involves the quantity $\gamma_t' \coloneqq \gamma_t - \frac{u_t}{\beta_t}$. With our definition, this yields $\gamma_t' = \sqrt{z_t / \beta_t}$, while using the unnormalized $p_t$ (without $1 / \spr*{cK}$) gives
+%
+\begin{equation*}
+    \gamma_t' = c K \sqrt{z_t \eta_t} + \spr*{c K - 1} u_t \eta_t \geq c K \sqrt{z_t \eta_t},
+\end{equation*}
+%
+assuming $c K \geq 1$. This leads to the bound
+%
+\begin{align*}
+    \sumtT \bbE \sbr*{\frac{z_t \eta_t}{\gamma_t'} + \gamma_t} &\leq \sumtT \bbE \sbr*{\frac{1}{c K}\sqrt{\frac{z_t}{\beta_t}} + c K \spr*{\sqrt{\frac{z_t}{\beta_t}} + \frac{u_t}{\beta_t}}} \\
+    &\leq \spr*{\frac{1}{c K} + c K} \sumtT \bbE \sbr*{2 \sqrt{\frac{z_t}{\beta_t}} + \frac{u_t}{\beta_t}}.
+\end{align*}
+%
+The factor $\spr*{c K}^{-1} + c K$ then propagates through the analysis and degrades the regret bound. More generally, an overestimation of $p_t$ by a multiplicative factor $\omega$ leads to a regret that is worsened by a factor proportional to $\omega + \omega^{-1}$, so $\omega = 1$ (our tuning) is optimal.

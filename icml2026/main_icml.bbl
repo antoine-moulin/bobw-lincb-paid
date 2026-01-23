@@ -1,0 +1,222 @@
+\begin{thebibliography}{42}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Abbasi-Yadkori et~al.(2011)Abbasi-Yadkori, P{\'a}l, and Szepesv{\'a}ri]{Abbasi-YadkoriPS11}
+Abbasi-Yadkori, Y., P{\'a}l, D., and Szepesv{\'a}ri, C.
+\newblock Improved algorithms for linear stochastic bandits.
+\newblock In \emph{Advances in Neural Information Processing Systems 24}, pp.\  2312--2320, 2011.
+
+\bibitem[Abe \& Long(1999)Abe and Long]{AbeL99}
+Abe, N. and Long, P.~M.
+\newblock Associative reinforcement learning using linear probabilistic concepts.
+\newblock In \emph{Proceedings of the Sixteenth International Conference on Machine Learning}, pp.\  3--11. Morgan Kaufmann, 1999.
+
+\bibitem[Abeille \& Lazaric(2017)Abeille and Lazaric]{AbeilleL17}
+Abeille, M. and Lazaric, A.
+\newblock Linear thompson sampling revisited.
+\newblock In \emph{Proceedings of the 20th International Conference on Artificial Intelligence and Statistics}, volume~54, pp.\  176--184. PMLR, 2017.
+
+\bibitem[Abeille et~al.(2025)Abeille, Janz, and Pike-Burke]{AbeilleJP25}
+Abeille, M., Janz, D., and Pike-Burke, C.
+\newblock When and why randomised exploration works (in linear bandits).
+\newblock In \emph{Proceedings of the International Conference on Algorithmic Learning Theory}, volume 272, pp.\  4--22. PMLR, 2025.
+
+\bibitem[Agrawal \& Goyal(2013)Agrawal and Goyal]{AgrawalG13TSlinear}
+Agrawal, S. and Goyal, N.
+\newblock Thompson sampling for contextual bandits with linear payoffs.
+\newblock In \emph{Proceedings of the 30th International Conference on Machine Learning}, pp.\  127--135. JMLR.org, 2013.
+
+\bibitem[Alon et~al.(2013)Alon, Cesa-Bianchi, Gentile, and Mansour]{AlonCGM13}
+Alon, N., Cesa-Bianchi, N., Gentile, C., and Mansour, Y.
+\newblock From bandits to experts: A tale of domination and independence.
+\newblock In \emph{Advances in Neural Information Processing Systems 26}, pp.\  1610--1618, 2013.
+
+\bibitem[Amir et~al.(2022)Amir, Azov, Koren, and Livni]{amir2022better}
+Amir, I., Azov, G., Koren, T., and Livni, R.
+\newblock Better best of both worlds bounds for bandits with switching costs.
+\newblock \emph{Advances in Neural Information Processing Systems}, 35:\penalty0 15800--15810, 2022.
+
+\bibitem[Auer et~al.(2002)Auer, Cesa-Bianchi, Freund, and Schapire]{auer2002nonstochastic}
+Auer, P., Cesa-Bianchi, N., Freund, Y., and Schapire, R.~E.
+\newblock The nonstochastic multiarmed bandit problem.
+\newblock \emph{SIAM Journal on Computing}, 32\penalty0 (1):\penalty0 48--77, 2002.
+
+\bibitem[Avner et~al.(2012)Avner, Mannor, and Shamir]{AvnerMS12}
+Avner, O., Mannor, S., and Shamir, O.
+\newblock Decoupling exploration and exploitation in multi-armed bandits.
+\newblock In \emph{Proceedings of the 29th International Conference on Machine Learning}, 2012.
+
+\bibitem[Bart{\'o}k et~al.(2014)Bart{\'o}k, Foster, P{\'a}l, Rakhlin, and Szepesv{\'a}ri]{bartok2014partial}
+Bart{\'o}k, G., Foster, D., P{\'a}l, D., Rakhlin, A., and Szepesv{\'a}ri, C.
+\newblock Partial monitoring---classification, regret bounds, and algorithms.
+\newblock \emph{Mathematics of Operations Research}, 39\penalty0 (4):\penalty0 967--997, 2014.
+\newblock \doi{10.1287/moor.2014.0663}.
+
+\bibitem[Bastani et~al.(2021)Bastani, Bayati, and Khosravi]{BastaniBK21}
+Bastani, H., Bayati, M., and Khosravi, K.
+\newblock Mostly exploration-free algorithms for contextual bandits.
+\newblock \emph{Management Science}, 67\penalty0 (3):\penalty0 1329--1349, 2021.
+\newblock \doi{10.1287/mnsc.2020.3605}.
+
+\bibitem[Beygelzimer et~al.(2011)Beygelzimer, Langford, Li, Reyzin, and Schapire]{BeygelzimerLLRS11}
+Beygelzimer, A., Langford, J., Li, L., Reyzin, L., and Schapire, R.~E.
+\newblock Contextual bandit algorithms with supervised learning guarantees.
+\newblock In \emph{Proceedings of the Fourteenth International Conference on Artificial Intelligence and Statistics}, volume~15, pp.\  19--26. JMLR.org, 2011.
+
+\bibitem[Bubeck \& Cesa-Bianchi(2012)Bubeck and Cesa-Bianchi]{BubeckCbook12}
+Bubeck, S. and Cesa-Bianchi, N.
+\newblock Regret analysis of stochastic and nonstochastic multi-armed bandit problems.
+\newblock \emph{Foundations and Trends in Machine Learning}, 5\penalty0 (1):\penalty0 1--122, 2012.
+\newblock \doi{10.1561/2200000024}.
+
+\bibitem[Bubeck \& Slivkins(2012)Bubeck and Slivkins]{bubeck12bobw}
+Bubeck, S. and Slivkins, A.
+\newblock The best of both worlds: Stochastic and adversarial bandits.
+\newblock In \emph{Proceedings of the 25th Annual Conference on Learning Theory}, volume~23, pp.\  42.1--42.23. PMLR, 2012.
+
+\bibitem[Dani et~al.(2008)Dani, Hayes, and Kakade]{DaniHK08}
+Dani, V., Hayes, T.~P., and Kakade, S.~M.
+\newblock Stochastic linear optimization under bandit feedback.
+\newblock In \emph{Proceedings of the 21st Annual Conference on Learning Theory}, pp.\  355--366. Omnipress, 2008.
+
+\bibitem[Dann et~al.(2023)Dann, Wei, and Zimmert]{DannWZ23}
+Dann, C., Wei, C.-Y., and Zimmert, J.
+\newblock A blackbox approach to best of both worlds in bandits and beyond.
+\newblock In \emph{Proceedings of the 36th Annual Conference on Learning Theory}, volume 195, pp.\  5503--5570. PMLR, 2023.
+
+\bibitem[Degenne et~al.(2020)Degenne, Shao, and Koolen]{DegenneSK20}
+Degenne, R., Shao, H., and Koolen, W.~M.
+\newblock Structure adaptive algorithms for stochastic bandits.
+\newblock In \emph{Proceedings of the 37th International Conference on Machine Learning}, volume 119, pp.\  2443--2452. PMLR, 2020.
+
+\bibitem[Efroni et~al.(2021)Efroni, Merlis, Saha, and Mannor]{EfroniMSM21}
+Efroni, Y., Merlis, N., Saha, A., and Mannor, S.
+\newblock Confidence-budget matching for sequential budgeted learning.
+\newblock In \emph{Proceedings of the 38th International Conference on Machine Learning}, volume 139, pp.\  2937--2947. PMLR, 2021.
+
+\bibitem[Flynn et~al.(2023)Flynn, Reeb, Kandemir, and Peters]{FlynnRKP23}
+Flynn, H., Reeb, D., Kandemir, M., and Peters, J.~R.
+\newblock Improved algorithms for stochastic linear bandits using tail bounds for martingale mixtures.
+\newblock In \emph{Advances in Neural Information Processing Systems 36}, 2023.
+
+\bibitem[Jin et~al.(2023)Jin, Liu, and Luo]{jin2023improved}
+Jin, T., Liu, J., and Luo, H.
+\newblock Improved best-of-both-worlds guarantees for multi-armed bandits: Ftrl with general regularizers and multiple optimal arms.
+\newblock \emph{Advances in Neural Information Processing Systems}, 36:\penalty0 30918--30978, 2023.
+
+\bibitem[Kato \& Ito(2025)Kato and Ito]{KatoI25}
+Kato, M. and Ito, S.
+\newblock Lc-tsallis-inf: Generalized best-of-both-worlds linear contextual bandits.
+\newblock In \emph{Proceedings of the International Conference on Artificial Intelligence and Statistics}, volume 258, pp.\  3655--3663. PMLR, 2025.
+
+\bibitem[Kirschner et~al.(2020)Kirschner, Lattimore, and Krause]{KirschnerL020}
+Kirschner, J., Lattimore, T., and Krause, A.
+\newblock Information directed sampling for linear partial monitoring.
+\newblock In \emph{Proceedings of the Conference on Learning Theory}, volume 125, pp.\  2328--2369. PMLR, 2020.
+
+\bibitem[Kuroki et~al.(2024)Kuroki, Rumi, Tsuchiya, Vitale, and Cesa-Bianchi]{BOBWlinear}
+Kuroki, Y., Rumi, A., Tsuchiya, T., Vitale, F., and Cesa-Bianchi, N.
+\newblock Best-of-both-worlds algorithms for linear contextual bandits.
+\newblock In Dasgupta, S., Mandt, S., and Li, Y. (eds.), \emph{Proceedings of the 27th International Conference on Artificial Intelligence and Statistics}, volume 238 of \emph{Proceedings of Machine Learning Research}, pp.\  1216--1224. PMLR, 2024.
+
+\bibitem[Langford \& Zhang(2007)Langford and Zhang]{LangfordZ07}
+Langford, J. and Zhang, T.
+\newblock The epoch-greedy algorithm for multi-armed bandits with side information.
+\newblock In \emph{Advances in Neural Information Processing Systems 20}, pp.\  817--824, 2007.
+
+\bibitem[Lattimore \& Szepesv{\'a}ri(2017)Lattimore and Szepesv{\'a}ri]{LattimoreS17}
+Lattimore, T. and Szepesv{\'a}ri, C.
+\newblock The end of optimism? an asymptotic analysis of finite-armed linear bandits.
+\newblock In \emph{Proceedings of the 20th International Conference on Artificial Intelligence and Statistics}, volume~54, pp.\  728--737. PMLR, 2017.
+
+\bibitem[Lattimore \& Szepesv{\'a}ri(2020)Lattimore and Szepesv{\'a}ri]{BanditBook}
+Lattimore, T. and Szepesv{\'a}ri, C.
+\newblock \emph{Bandit Algorithms}.
+\newblock Cambridge University Press, 2020.
+
+\bibitem[Li et~al.(2010)Li, Chu, Langford, and Schapire]{LiCLS10}
+Li, L., Chu, W., Langford, J., and Schapire, R.~E.
+\newblock A contextual-bandit approach to personalized news article recommendation.
+\newblock In \emph{Proceedings of the 19th International Conference on World Wide Web}, pp.\  661--670. ACM, 2010.
+\newblock \doi{10.1145/1772690.1772758}.
+
+\bibitem[Mannor \& Shamir(2011)Mannor and Shamir]{MannorS11}
+Mannor, S. and Shamir, O.
+\newblock From bandits to experts: On the value of side-observations.
+\newblock In \emph{Advances in Neural Information Processing Systems 24}, pp.\  684--692, 2011.
+
+\bibitem[Neu(2015)]{neu2016exploration}
+Neu, G.
+\newblock Explore no more: Improved high-probability regret bounds for non-stochastic bandits.
+\newblock \emph{arXiv preprint arXiv:1506.03271}, 2015.
+
+\bibitem[Neu \& Bart{\'o}k(2013)Neu and Bart{\'o}k]{neu2013efficient}
+Neu, G. and Bart{\'o}k, G.
+\newblock An efficient algorithm for learning with semi-bandit feedback.
+\newblock \emph{arXiv preprint arXiv:1305.2732}, 2013.
+
+\bibitem[Neu \& Olkhovskaya(2020)Neu and Olkhovskaya]{NeuO20}
+Neu, G. and Olkhovskaya, J.
+\newblock Efficient and robust algorithms for adversarial linear contextual bandits.
+\newblock In \emph{Proceedings of the Conference on Learning Theory}, volume 125, pp.\  3049--3068. PMLR, 2020.
+
+\bibitem[Olkhovskaya et~al.(2023)Olkhovskaya, Mayo, van Erven, Neu, and Wei]{OlkhovskayaMENW23}
+Olkhovskaya, J., Mayo, J.~J., van Erven, T., Neu, G., and Wei, C.-Y.
+\newblock First- and second-order bounds for adversarial linear contextual bandits.
+\newblock In \emph{Advances in Neural Information Processing Systems 36}, 2023.
+
+\bibitem[Rouyer et~al.(2022)Rouyer, van~der Hoeven, Cesa-Bianchi, and Seldin]{RouyerHCS22}
+Rouyer, C., van~der Hoeven, D., Cesa-Bianchi, N., and Seldin, Y.
+\newblock A near-optimal best-of-both-worlds algorithm for online learning with feedback graphs.
+\newblock In \emph{Advances in Neural Information Processing Systems 35}, 2022.
+
+\bibitem[Saha \& Gaillard(2022)Saha and Gaillard]{saha2022versatile}
+Saha, A. and Gaillard, P.
+\newblock Versatile dueling bandits: Best-of-both world analyses for learning from relative preferences.
+\newblock In \emph{Proceedings of the International Conference on Machine Learning}, pp.\  19011--19026. PMLR, 2022.
+
+\bibitem[Seldin \& Slivkins(2014)Seldin and Slivkins]{SeldinS14}
+Seldin, Y. and Slivkins, A.
+\newblock One practical algorithm for both stochastic and adversarial bandits.
+\newblock In \emph{Proceedings of the 31st International Conference on Machine Learning}, pp.\  1287--1295. JMLR.org, 2014.
+
+\bibitem[Seldin et~al.(2014)Seldin, Bartlett, Crammer, and Abbasi-Yadkori]{paidobservations}
+Seldin, Y., Bartlett, P., Crammer, K., and Abbasi-Yadkori, Y.
+\newblock Prediction with limited advice and multiarmed bandits with paid observations.
+\newblock In Xing, E. and Jebara, T. (eds.), \emph{Proceedings of the 31st International Conference on Machine Learning}, volume~32 of \emph{Proceedings of Machine Learning Research}, pp.\  280--287, Beijing, China, 2014. PMLR.
+
+\bibitem[Shalev-Shwartz(2012)]{ShalevShwartz12}
+Shalev-Shwartz, S.
+\newblock Online learning and online convex optimization.
+\newblock \emph{Foundations and Trends in Machine Learning}, 4\penalty0 (2):\penalty0 107--194, 2012.
+
+\bibitem[Tsuchiya \& Ito(2024)Tsuchiya and Ito]{BOBWhardproblems}
+Tsuchiya, T. and Ito, S.
+\newblock A simple and adaptive learning rate for ftrl in online learning with minimax regret of $\\theta(t^{2/3})$ and its application to best-of-both-worlds.
+\newblock \emph{NeurIPS}, 2024.
+
+\bibitem[Tsuchiya et~al.(2023)Tsuchiya, Ito, and Honda]{tsuchiya2023further}
+Tsuchiya, T., Ito, S., and Honda, J.
+\newblock Further adaptive best-of-both-worlds algorithm for combinatorial semi-bandits.
+\newblock In \emph{Proceedings of the International Conference on Artificial Intelligence and Statistics}, pp.\  8117--8144. PMLR, 2023.
+
+\bibitem[Yun et~al.(2018)Yun, Prouti{\'e}re, Ahn, Shin, and Yi]{YunPASY18}
+Yun, D., Prouti{\'e}re, A., Ahn, S., Shin, J., and Yi, Y.
+\newblock Multi-armed bandit with additional observations.
+\newblock \emph{Proceedings of ACM Measurement and Analysis of Computing Systems}, 2\penalty0 (1):\penalty0 13:1--13:22, 2018.
+\newblock \doi{10.1145/3179416}.
+
+\bibitem[Zimmert \& Marinov(2024)Zimmert and Marinov]{zimmert24prod}
+Zimmert, J. and Marinov, T.~V.
+\newblock Productive bandits: Importance weighting no more.
+\newblock In \emph{Advances in Neural Information Processing Systems 37}, pp.\  85360--85388, 2024.
+
+\bibitem[Zimmert \& Seldin(2022)Zimmert and Seldin]{zimmerttsallis2022}
+Zimmert, J. and Seldin, Y.
+\newblock Tsallis-inf: An optimal algorithm for stochastic and adversarial bandits, 2022.
+
+\end{thebibliography}

@@ -1,0 +1,279 @@
+\section{TECHNICAL LEMMAS}
+
+\DB{Below we have a problem, $\lambda_{\min}(\Sigma_{t,a}) \ge p_t \, \lambda_{\min}$ has no reason to hold and this should be fixed.}
+
+\DB{Additionally, we haven't sorted the dimension issue yet. What should be the right dependence in $d$? It's not so clear, but it should appear in the squared loss if we follow previous works: there, $d$ come from using a trace bound instead of our inequalities below. Some of our steps are probably wrong.}
+
+\DB{The following result should bound $\bE[\sum_{a} q_{t,a}^{2-\alpha} \widehat \ell_{t,a}^2]$ or whatever is needed in the part of the proof where it's used.}
+\begin{lemma}\label{lem::bound_squared_loss}
+Let $X_t \in \mathbb{R}^d$ be a random context and fix any arm $a \in [K]$. 
+% \red{Previous sentence is not formal for a Lemma statement. Either say "under the assumptions of Section 2" (would have been better to name them), or "under the assumptions that XX and XX (see Section 2)".}
+Under the assumptions of Section~\ref{sec::setting}, we have $\|X_t\|_2 \le 1$ almost surely, and the loss function satisfies $-1 \le \ell_t(X_t,a) \le 1$.
+
+We also recall that $\Sigma_{t,a}$ is a positive definite matrix such that 
+\[
+\lambda_{\min}(\Sigma_{t,a}) \ge p_t \, \lambda_{\min},
+\]
+\DB{We should probably adopt a notation $p_t(X)$, a lot of confusion comes from using $p_t$ for many different things. The above line is clearly wrong (if $p_t$ is $p_t(X_t)$). It is true with $p_{t, \min}\coloneqq \min_{x\in \cX}p_t(x)$ though, and could be replaced by $\frac{\gamma}{K}$ if we add a forced exploration $\gamma$.}
+and that the importance-weighted estimator is given by
+\[
+\wh{\theta}_{t,a} 
+:= \Sigma_{t,a}^{-1} X_t \, \ell_t(X_t,a) \, \mathbf{1}\{a \in O_t\},
+\]
+where $\mathbb{P}(a \in O_t) = p_t$. %\red{D: ok, pls rephrase everything without any "remember". (first, use "we recall that" instead, second, if you want to recall stuff pls do it in the proof directly).}
+Then,
+\[
+\mathbb{E}\!\left[\langle X_t, \wh{\theta}_{t,a} \rangle^2\right] 
+\;\le\; \frac{1}{\lambda_{\min}^2 \, p_t}.
+\]
+\end{lemma}
+
+\begin{proof}
+We know that the smallest eigenvalue of $\Sigma_{t,a}$ is $\ge p_t \lambda_{\min}$. %\red{I don't think the notation $\lambda_{\min}(.)$ is formally defined. Say in words "the minimum eigenvalue ;.." and avoid this notation.}, we have
+\[
+\|\Sigma_{t,a}^{-1}\|_2 
+\;\le\; \frac{1}{\lambda_{\min}(\Sigma_{t,a})}
+\;\le\; \frac{1}{p_t \lambda_{\min}}.
+\]
+Therefore,
+\[
+\|\wh{\theta}_{t,a}\|_2
+= \|\Sigma_{t,a}^{-1} X_t \, \ell_t(X_t,a)\, \mathbf{1}\{a \in O_t\}\|_2
+\le \frac{\|X_t\|_2}{p_t \lambda_{\min}} \, \mathbf{1}\{a \in O_t\}.
+\]
+By the Cauchy–Schwarz inequality,
+\[
+\langle X_t, \wh{\theta}_{t,a} \rangle^2
+\le \|X_t\|_2^2 \, \|\wh{\theta}_{t,a}\|_2^2
+\le \frac{\|X_t\|_2^4}{p_t^2 \lambda_{\min}^2} \, \mathbf{1}\{a \in O_t\}.
+\]
+Taking expectations and using $\mathbb{E}[\mathbf{1}\{a \in O_t\}] = p_t$, we obtain
+\[
+\mathbb{E}\!\left[\langle X_t, \wh{\theta}_{t,a} \rangle^2\right]
+\le \frac{\mathbb{E}[\|X_t\|_2^4]}{p_t \lambda_{\min}^2}.
+\]
+Since $\|X_t\|_2 \le \sqrt{d}$ almost surely, it follows that $\mathbb{E}[\|X_t\|_2^4] \le 1$, and hence
+\[
+\mathbb{E}\!\left[\langle X_t, \wh{\theta}_{t,a} \rangle^2\right]
+\le \frac{1}{\lambda_{\min}^2 \, p_t}.
+\]
+\end{proof}
+
+\db{(minor for now) Write a few sentences between lemmas. Also, here we just do an unstructured list, but actually the above lemma is crucial, while the following is just a restatement of an existing result. Might be nice to structure this.}
+
+\begin{lemma}[Lemma~14 in \cite{BOBWhardproblems}]\label{lem::ub_ftrl_technical}
+Let $q \in \mathcal{P}_K$ and let $\bar{I} \in \arg\max_{i \in [K]} q_i$.  
+Let $l \in \mathbb{R}^K$ be such that, for all $i \in [K]$,
+\[
+|l_i| \leq \frac{1 - \alpha}{4} \cdot \frac{1}{\min(q_{\bar{I}}, 1 - q_{\bar{I}})^{1 - \alpha}}.
+\]
+Then, the following bound holds:
+\[
+\max_{p \in \mathcal{P}_K} \left\{ 
+\langle l, q - p \rangle - D_{-H_\alpha}(p, q) 
+\right\}
+\leq \frac{4}{1 - \alpha} \Bigg( 
+\sum_{i \neq \bar{I}} q_i^{2 - \alpha} l_i^2
++ \min(q_{\bar{I}}, 1 - q_{\bar{I}})^{2 - \alpha} l_{\bar{I}}^2 
+\Bigg)
+\]
+
+\end{lemma}
+
+
+\begin{lemma}\label{lem::standard_regret_decompo}
+Let $x\in\mathbb{R}^d$ be any fixed context. For each $t\ge1$, let
+$q_t(\cdot|x)\in\Delta_K$ be the distribution used to sample $A_t$
+given $x$, and let $\pi^{*}(\cdot|x)\in\Delta_K$ be any comparator
+policy. Let $(\psi_t)_{t\ge1}$ be a sequence of
+$\sigma$-strongly convex regularizers on $\Delta_K$, and let
+$D_t(\cdot,\cdot)$ denote the Bregman divergence induced by $\psi_t$.
+Denoting $\wh\ell_t(x)\in\mathbb{R}^K$ for the vector of estimated losses
+at context $x$, with $[\wh\ell_t(x)]_a := \langle x,\wh\theta_{t,a}\rangle$.
+Then
+\begin{align*}
+\mathbb{E}\!\left[\sum_{t=1}^T
+\Big(\langle x,\wh\theta_{t,A_t}\rangle-\langle x,\wh\theta_{t,\pi^{*}(x)}\rangle\Big)\right]
+&\le
+\mathbb{E}\!\left[\sum_{t=1}^T\big(\psi_t(q_{t+1}(.|x))-\psi_{t+1}(q_{t+1}(.|x))\big)\right] \\
+&+ \mathbb{E}\!\left[\sum_{t=1}^T\big(\langle q_t(.|x)-q_{t+1}(.|x),\wh\ell_t(x)\rangle - D_t(q_{t+1}(.|x),q_t(.|x))\big)\right] \\
+&
++ \mathbb{E}\!\left[\psi_{T+1}(\pi^{*}(\cdot|x))-\psi_1(q_1(\cdot|x))\right]
++ \bar\beta\,\bar h,
+\end{align*}
+where $\bar h:=\max_{p\in\Delta_K}H_{\bar\alpha}(p)$ and $\bar\beta\ge0$
+is the coefficient that upper-bounds the change of regularizer in our setting.
+\end{lemma}
+
+\DB{This lemma above uses a fixed context, so is suited for a proof that uses the ghost sample technique. It cannot work for the proof as it is right now.}
+
+\DB{Has to be modified if forced exploration is introduced. See (44) in \cite{BOBWlinear} for their result.}
+
+\begin{proof}
+Conditionally on $x$, $A_t\sim q_t(\cdot|x)$, hence
+\[
+\mathbb{E}\!\left[\langle x,\wh\theta_{t,A_t}\rangle \,\middle|\, x\right]
+= \sum_{a\in[K]} q_t(a|x)\,\langle x,\wh\theta_{t,a}\rangle.
+\]
+Therefore,
+\begin{align*}
+\mathbb{E}\!\left[\sum_{t=1}^T
+\big(\langle x,\wh\theta_{t,A_t}\rangle-\langle x,\wh\theta_{t,\pi^{*}(x)}\rangle\big)\right]
+&=
+\mathbb{E}\!\left[\sum_{t=1}^T \sum_{a\in[K]}
+\big(q_t(a|x)-\pi^{*}(a|x)\big)\,\langle x,\wh\theta_{t,a}\rangle\right] \\
+&= \mathbb{E}\!\left[\sum_{t=1}^T \langle q_t(.|x)-\pi^{*}(\cdot|x),\,\wh\ell_t(x)\rangle\right].
+\end{align*}
+
+%\red{Don't be lazy! this kind of formulation is not ok in a research paper, mais c vraiment ce que absolument tous les articles font et en vrai c clair, genre c pas psq c un exo qu'on peut pas le citer nan?}
+We now invoke the standard FTRL regret decomposition with time-varying regularizers (see, e.g. Exercise~28.12 in \cite{BanditBook}): \DB{I think this works only with the estimate that is actually used in FTRL. So, for us, $\wt \theta_{t,a}$.}  
+for any $q\in\Delta_K$,
+\begin{align*}
+\sum_{t=1}^T \langle q_t(.|x)-q,\,\wh\ell_t(x)\rangle
+&\le \psi_{T+1}(q)-\psi_1(q_1)
++ \sum_{t=1}^T\big(\psi_t(q_{t+1}(.|x)))-\psi_{t+1}(q_{t+1}(.|x))\big) \\
+&\qquad\qquad
++ \sum_{t=1}^T\big(\langle q_t(.|x)-q_{t+1}(.|x),\wh\ell_t(x)\rangle - D_t(q_{t+1}(.|x),q_t(.|x))\big).
+\end{align*}
+Choosing $q=\pi^{*}(\cdot|x)$ and taking expectations yields the claim,
+with the additional additive term $\bar\beta\,\bar h$ accounting for the
+regularizer variation bound used in our setup.
+\end{proof}
+
+
+
+
+\begin{lemma}[Lemma~15 of \cite{BOBWhardproblems}]\label{lem::ftrl_smooth_bound}
+Let $l,L \in \R^K$, let $q,r \in \cP_k$ be:
+
+\[q \in \text{arg min}_{p \in \cP_k}\{\lan{L,p}+\beta(-H_{\alpha}(p))+\bar{\beta}(-H_{\bar{\alpha}}(p))\}\]
+
+\[r \in \text{arg min}_{p \in \cP_k}\{\lan{L+l,p}+\beta'(-H_{\alpha}(p))+\bar{\beta}(-H_{\bar{\alpha}}(p))\}\]
+
+for the Tsallis entropy $H_{\alpha}$ and $0<\beta<\beta'$. Suppose also that
+
+\[||l||_{\infty}\leq\max(\frac{1-(\sqrt{2})^{\alpha-1}}{2}q_*^{\alpha-1}\beta,\frac{1-(\sqrt{2})^{\bar{\alpha}-1}}{2}q_*^{\bar{\alpha}-1}\bar{\beta})\]
+
+\[0 \leq \beta'-\beta \leq \max((1-(\sqrt{2})^{\alpha-1})\beta,\frac{1-(\sqrt{2})^{\bar{\alpha}-1}}{\sqrt{2}}q_*^{\bar{\alpha}-\alpha}\bar{\beta})\]
+
+Then it holds that $H_{\alpha}(r) \leq 2H_{\alpha}(q)$.
+\end{lemma}
+
+\DB{Check carefully this thing below, cause there might be again the issue of treating some probabilities as fixed while they're not. Note that the ghost sample technique might require that we only have to control the entropy of a fixed context $X_0$, which might simplify things.}
+\begin{lemma}\label{lem::cond_bound_ht}
+Algorithm~\ref{alg::FTRL_bobw} satisfies, for all $t \ge 1$,
+\[
+\mathbb{E}[h_{t+1}\mid \mathcal{H}_t] \le 2\,\mathbb{E}[h_t\mid \mathcal{H}_{t-1}].
+\]
+\end{lemma}
+
+\begin{proof}
+We first control the key quantities appearing in Lemma~\ref{lem::ftrl_smooth_bound}.
+Recall that $\beta_t = 1/\eta_t$, $\gamma_t = \sqrt{z_t/\beta_t} + u_t/\beta_t$,
+and $h_t = \frac{1}{\alpha}\sum_{i=1}^{K}(q_{t,i}^{\alpha}-q_{t,i})$.
+
+\paragraph{Step 1: Bounding $\sqrt{z_t}$ and $h_t$.}
+By definition of $z_t$ we have
+\[
+\sqrt{z_t}
+= \sqrt{\frac{4cK d^2}{1-\alpha}
+\Big(\sum_{i\ne I_t}q_{t,i}^{2-\alpha}+q_{t,a_t^\star}^{2-\alpha}\Big)}
+\le \frac{2d\sqrt{Kc}}{\sqrt{1-\alpha}}\,q_{t,a_t^\star}^{\,1-\frac{\alpha}{2}}.
+\]
+In addition, from the properties of the Tsallis entropy (see, e.g., Lemma 13 of \cite{BOBWhardproblems}),
+\[
+h_t = \frac{1}{\alpha}\sum_{i=1}^{K}(q_{t,i}^{\alpha}-q_{t,i})
+\ge \frac{1-(1/2)^{1-\alpha}}{\alpha}\,q_{t,a_t^\star}^{\alpha}
+\ge \frac{1-\alpha}{4\alpha}\,q_{t,a_t^\star}^{\alpha}.
+\]
+
+\paragraph{Step 2: Bounding the variation of $\beta_t$.}
+From Equation~\ref{Rule2},
+\[
+\beta_{t+1}-\beta_t
+= \frac{2}{h_t}\sqrt{\tfrac{z_t}{\beta_t}}
++ \frac{u_t}{h_t\beta_t}.
+\]
+Plugging in the bounds on $\sqrt{z_t}$ and $h_t$ gives
+\begin{align*}
+\beta_{t+1}-\beta_t
+&\le \frac{16\alpha d\sqrt{Kc}}{\sqrt{\beta_t}(1-\alpha)^{3/2}}\,q_{t,a_t^\star}^{\,1-\frac{3\alpha}{2}}
++ \frac{32\alpha d\max(c,1)}{\sqrt{\beta_t}(1-\alpha)^2\lambda_{\min}}\,q_{t,a_t^\star}^{\,1-2\alpha} \\
+&\le \alpha\bar{\beta}\,q_{t,a_t^\star}^{\,1-\frac{3\alpha}{2}}
++ \frac{\alpha\bar{\beta}}{\lambda_{\min}}\,q_{t,a_t^\star}^{\,1-2\alpha} \\
+&\le 2\,\frac{(1-\bar{\alpha})}{\min(1,\lambda_{\min})}\,\bar{\beta}\,q_{t,a_t^\star}^{\,\bar{\alpha}-\alpha}
+\le 2\,\frac{1-(\sqrt{2})^{\bar{\alpha}-1}}{\sqrt{2}}\,
+\bar{\beta}\,q_{t,a_t^\star}^{\,\bar{\alpha}-\alpha}.
+\end{align*}
+Hence, $\beta_{t+1}-\beta_t$ satisfies the second condition of Lemma~\ref{lem::ftrl_smooth_bound}.
+
+\paragraph{Step 3: Bounding the loss magnitude.}
+For any fixed context $x$ and arm $i\in[K]$,
+\begin{align*}
+|\wh{\ell}_{t+1,i}(x)|
+&= |\langle x, \wh{\theta}_{t+1,i} \rangle|
+\le \frac{d}{\lambda_{\min} p_t}
+\le \frac{d}{\lambda_{\min}}\cdot\frac{\beta_t}{u_t} \\
+&= \frac{1-\alpha}{8}\cdot\frac{\beta_t}{q_{t,a_t^\star}^{\,1-\alpha}}
+\le \frac{1-(\sqrt{2})^{\alpha-1}}{2}\cdot\frac{\beta_t}{q_{t,a_t^\star}^{\,1-\alpha}}.
+\end{align*}
+This matches the first smoothness condition of Lemma~\ref{lem::ftrl_smooth_bound}.
+
+\paragraph{Step 4: Applying Lemma~\ref{lem::ftrl_smooth_bound}.}
+Since both smoothness conditions are satisfied, the lemma implies
+\[
+H_{\alpha}(q_{t+1}) \le 2\,H_{\alpha}(q_t),
+\]
+and therefore $h_{t+1} \le 2h_t$ whenever the context remains fixed.
+
+Taking conditional expectations and using the stationarity of the context distribution then yields
+\[
+\mathbb{E}[h_{t+1}\mid \mathcal{H}_t]
+\le 2\,\mathbb{E}[h_t\mid \mathcal{H}_{t-1}],
+\]
+which completes the proof.
+\end{proof}
+
+
+\begin{lemma}[Slight adaptation of Theorem~6 of \cite{BOBWhardproblems}]\label{hardthm6}
+
+For all $\epsilon \geq 1/T$, it holds that
+
+\begin{align*}
+&\quad F\left( \beta_{1:T}, z_{1:T}, u_{1:T}, h_{0:T-1} \right) \\
+&\lesssim \min \left\{ 
+\left( \sum_{t=1}^T \sqrt{z_t h_t \log(\epsilon T)} \right)^{2/3} \right. \\
+&\qquad\quad \left. ,\ \left( \frac{ \sqrt{z_{\max} h_{\max}} }{\epsilon} \right)^{2/3},
+\left( \sum_{t=1}^T \sqrt{z_t h_{\max}} \right)^{2/3}
+\right\} \\
+& + \min \left\{ 
+\sqrt{ \sum_{t=1}^T u_t h_t \log(\epsilon T) },\ 
+\frac{ \sqrt{u_{\max} h_{\max}} }{\epsilon },\ 
+\sum_{t=1}^T u_t h_{\max} 
+\right\} \\
+& + \sqrt{ \frac{ z_{\max} }{ \beta_1 } }
++ \frac{ u_{\max} }{ \beta_1 }
++ \beta_1 h_1
+\end{align*}
+
+
+\end{lemma}
+
+\begin{proof}
+This slight adaptation originates from a minor modification of Lemma~4 in \cite{BOBWhardproblems}, where in the first line of equation (24) we instead bound:
+\begin{align*}
+&F\left( \beta_{1:T}, z_{1:T}, u_{1:T}, h_{0:T-1} \right) 
+\leq 2 \sqrt{ \frac{z_1}{\beta_1} } 
++ \frac{u_1}{\beta_1} 
++ \beta_1 h_1 \\
+&\quad + \sum_{t=2}^T \left( 
+2 \sqrt{ \frac{z_t}{\beta_t} } 
++ \frac{u_t}{\beta_t} 
++ (\beta_t - \beta_{t-1}) h_{t-1} 
+\right).
+\end{align*}
+
+
+After this adjustment, the remainder of the proof proceeds identically.
+
+\end{proof}

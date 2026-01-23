@@ -1,0 +1,990 @@
+\documentclass[twoside]{article}
+
+% ready for submission
+\usepackage{aistats2026}
+
+\usepackage{ninecolors}
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage[colorlinks=true,
+            linkcolor=blue,
+            citecolor=blue4,
+            urlcolor=magenta]{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+
+\usepackage{amsmath, amssymb}
+\usepackage{amsthm}
+\usepackage{bbm}
+\usepackage{enumitem}
+\usepackage{dsfont}
+
+\usepackage{tikz,mathtools}
+\newtheorem{theorem}{Theorem} %[section]
+\newtheorem{corollary}{Corollary} %[theorem]
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+\newtheorem{assumption}{Assumption} %[section]
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{conjecture}{Conjecture}
+
+%% antoine
+\input{amacros.tex}
+\newcommand{\ptmin}{p_{t, \min}}
+\newcommand{\biasmgr}{\texttt{bias}_{\texttt{MGR}}}
+
+
+
+\begin{document}
+
+
+\twocolumn[
+
+\aistatstitle{Best-of-Both Worlds for linear contextual bandits with paid observations}
+
+\aistatsauthor{ Author 1 \And Author 2 \And  Author 3 }]
+
+
+
+\begin{abstract}
+    We study the problem of linear contextual bandits with paid observations, where at each round the learner selects an action in order to minimize its loss in a given context, and can then decide to pay a fixed cost to observe the loss of any arm. Building on the Follow-the-Regularized-Leader framework with efficient estimators via Matrix Geometric Resampling, we introduce a computationally efficient Best-of-Both-Worlds (BOBW) algorithm for this problem. We show that it achieves the minimax-optimal regret of $\Theta(T^{2/3})$ in adversarial settings, while guaranteeing poly-logarithmic regret in (corrupted) stochastic regimes. Our approach builds on the framework from \cite{BOBWhardproblems} to design BOBW algorithms for ``hard problem'', using analysis techniques tailored for the setting that we consider. %, which may be of independent interest.
+\end{abstract}
+
+
+\bibliographystyle{plainnat}
+\bibliography{biblio}
+
+\newpage
+
+\appendix
+\onecolumn
+
+
+
+\section{To-Do}
+
+\db{This section is for me to list the mistakes I remarked in the proof and some thoughts from related work.}
+
+\begin{itemize}
+    \item \DB{We have to cleanly re-write the proof with the ghost sample technique}, which is probably going to simplify some things (\eg Lemma 6, maybe the property is only needed for the ghost context). To do that, work directly from Lemma 3 of \cite{NeuO20}. We will probably be able to get the dimension from the standard trace trick.
+    \item In Eq.~\eqref{eq::bad_conditioning} if we want to use Lemma 2 we have to upper bounds tbe probs by $1$ and get $K$ instead of $\sum q_a^{2-\alpha}$. Otherwise we need a bound on $\bE[q_{t, a}^{2-\alpha}\widehat \ell_{t, a}^2]$ directly. 
+    \item In the MGR concentration and the proof of Lemma 2 we wrongly do as if the observation probability was uniform across all arms, the only way to make it right seems to use $\min_{X \in \cX}p_t \spr*{x}$. \DB{Several errors of this type can be corrected by introducing a forced exploration.}
+\end{itemize}
+
+In addition, below are some things that I don't understand and some remarks
+
+\begin{itemize}
+    \item In those papers they also use what is our Lemma 2 on the MGR-induced losses directly, not on the "unbiased estimates losses".
+    \item I really want to understand what "should" be the right dependency in $d$, if not from a formal lower bound at least from an intuitive point of view.
+    \item Kuroki et al. have a worst stochastic bound in $(\log(T))^3+d(\log(T))^2$. I'm wondering why and if we should have the same or if Taira's framework prevents us from that.
+\end{itemize}
+
+\paragraph{Ghost samples} Adapting the proofs from previous works we can easily get that 
+\[R_T \leq \bE_{X_0 \sim \cD}\left[\wt R_T(X_0)\right] + 2\sumtT \text{bias-MGR}_t, \]
+where for any $x\in \cD$ we define 
+\[\wt R_T \spr*{x} = \sumtT \left\{ \sum_{a=1}^K (q_t(a|x)-\pi_T^\star(a|x)) \langle x, \wt \theta_{t, a} \rangle + cK p_t \spr*{x} \right\} \;,\]
+where $p_t \spr*{x}$ is the observation probability at time $t$ if context $x$ is revealed.
+
+\DB{To me it is on $\wt R_t \spr*{x}$ that we have to state and prove Lemma 1.}
+
+
+\section{PROOF OF LEMMA~\ref{lem::adapt_tsuchaya}}\label{Appendix}
+
+\adath*
+
+\begin{proof}[Proof of Lemma~\ref{lem::adapt_tsuchaya}]
+The argument follows the same general structure of the proof of Theorem~7 in \cite{BOBWhardproblems}. 
+We first define
+    \begin{equation*}
+\gamma'_t \coloneqq \gamma_t - \frac{u_t}{\beta_t} = \sqrt{\frac{z_t}{\beta_t}}.
+    \end{equation*}
+
+
+Starting from the regret decomposition given by Assumption~(i) of the lemma, we have:
+\begin{align*}
+R_T 
+&\leq \bbE\Bigg[\sumtT \Big( 
+\Big(\frac{1}{\eta_t} - \frac{1}{\eta_{t-1}}\Big) h_t 
++ \frac{z_t \eta_t}{\gamma_t}
++ \gamma_t \Big)  \Bigg] + \bar{\beta}\bar{h}
+\\
+&\text{\small (by Assumption (i) of the lemma)} \\[0.4em]
+&= \bbE\Bigg[\sumtT \Big( 
+(\beta_t - \beta_{t-1}) h_t 
++ \frac{z_t \eta_t}{\gamma_t} 
++ \gamma_t \Big) \Bigg]+ \bar{\beta}\bar{h}
+\end{align*}
+
+where we used $\beta_t = 1/\eta_t$ and $\bar{h} = \max_{p \in \Delta_K} H_{\bar{\alpha}}(p)$.
+We now replace $\gamma_t$ by $\gamma'_t \le \gamma_t$ to simplify the analysis (this may loosen the bound slightly but keeps the algebra tractable):
+\begin{align*}
+R_T 
+&\leq \bbE\Bigg[\sumtT \Big( 
+(\beta_t - \beta_{t-1}) h_t 
++ \frac{z_t \eta_t}{\gamma'_t} 
++ \gamma_t \Big) \Bigg]+ \bar{\beta}\bar{h} \\[0.4em]
+&= \sumtT \bbE\!\left[ 
+(\beta_t - \beta_{t-1}) h_t 
++ \frac{z_t \eta_t}{\gamma'_t} 
++ \gamma_t \right]
++ \bar{\beta}\bar{h}
+\end{align*}
+
+\paragraph{Bounding the first term.}
+We first upper bound $\sumtT \bbE[(\beta_t - \beta_{t-1}) h_t]$.  
+By the tower rule and the fact that $(\beta_t - \beta_{t-1})$ is $\cH_{t-1}$-measurable, we have
+\begin{align*}
+\sumtT \bbE \!\left[ (\beta_t - \beta_{t-1}) h_t \right] 
+&= \sumtT \bbE \!\left[ 
+(\beta_t - \beta_{t-1}) \, 
+\bbE[h_t \mid \cH_{t-1}] \right].
+\end{align*}
+Then, by Assumption~(ii), which ensures 
+$\bbE[h_t \mid \cH_{t-1}] \le 2 \, \bbE[h_{t-1} \mid \cH_{t-2}]$, we get:
+\begin{align*}
+\sumtT \bbE \!\left[ (\beta_t - \beta_{t-1}) h_t \right]
+&\le 2 \sumtT \bbE\!\left[ (\beta_t - \beta_{t-1}) h_{t-1} \right].
+\end{align*}
+
+\paragraph{Bounding the remaining terms.}
+Using the definitions of $\gamma_t$ and $\gamma_t'$, namely
+$\gamma'_t = \sqrt{z_t / \beta_t}$ and $\gamma_t = \gamma'_t + u_t / \beta_t$, we have
+\begin{align}\label{eq::critical step}
+\sumtT \bbE\!\left[\frac{z_t \eta_t}{\gamma'_t} + \gamma_t \right]
+&= \sumtT \bbE\!\left[
+\sqrt{\frac{z_t}{\beta_t}} + 
+\Big( \sqrt{\frac{z_t}{\beta_t}} + \frac{u_t}{\beta_t} \Big) \right] \\
+&\le \sumtT \bbE\!\left[
+2\sqrt{\frac{z_t}{\beta_t}} + \frac{u_t}{\beta_t} \right]. \nonumber
+\end{align}
+
+Combining the two results above, we obtain:
+    \begin{equation*}
+R_T \le 
+\bbE\!\left[
+F(\beta_{1:T}, z_{1:T}, u_{1:T}, h_{0:T-1})
+\right]
++ \bbE[\bar{\beta}\bar{h}],
+    \end{equation*}
+where we define
+    \begin{equation*}
+F(\beta_{1:T}, z_{1:T}, u_{1:T}, h_{1:T})
+\coloneqq \sumtT 
+\left(
+(\beta_t - \beta_{t-1}) h_t
++ 2\sqrt{\frac{z_t}{\beta_t}}
++ \frac{u_t}{\beta_t}
+\right).
+    \end{equation*}
+Note that the regret upper bound we obtained at this step involves the sequence $h_{0:T-1}$, and not $h_{1:T}$ as in the above definition.  
+
+
+\paragraph{Adversarial regime}
+Using Lemma~\ref{hardthm6},
+we obtain that, for any $\epsilon \ge 1/T$,
+\begin{align*}
+F(\beta_{1:T}, z_{1:T}, u_{1:T}, h_{0:T-1})
+&\le \left( 
+\left[ \sumtT \sqrt{z_t h_t} \right] 
+\log(\epsilon T)
+\right)^{2/3} \\
+&\quad + \sqrt{
+\left[ \sumtT u_t h_t \right]
+\log(\epsilon T)
+} \\
+&\quad + 
+\left( \frac{\sqrt{z_{\max} h_1}}{\epsilon} \right)^{2/3}
++ \sqrt{ \frac{u_{\max} h_1}{\epsilon} }
++ \kappa.
+\end{align*}
+
+Substituting this into the previous inequality gives the claimed regret bound for the adversarial case:
+\begin{align*}
+R_T \le &
+\left( 
+\bbE\left[\sumtT \sqrt{z_t h_t}\right]
+\log(\epsilon T)
+\right)^{2/3} 
++ 
+\sqrt{
+\bbE\left[\sumtT u_t h_t\right]
+\log(\epsilon T)
+} \\
+& + 
+\left( \frac{\sqrt{z_{\max} h_1}}{\epsilon} \right)^{2/3}
++ 
+\sqrt{ \frac{u_{\max} h_1}{\epsilon} }
++ \kappa.
+\end{align*}
+Setting $\epsilon = 1/T$ yields the desired bound in the adversarial regime.
+
+\paragraph{Stochastic regime.}
+We now turn to the stochastic case, under Assumptions~(iii)–(iv). 
+Define
+    \begin{equation*}
+\varrho_0(\pi^\star_T) 
+\coloneqq \sumtT 
+\left( 1 - q_t(\pi^\star_T(X_t) \mid X_t) \right).
+    \end{equation*}
+%\red{$\pi^\star$ should be replaced by $\pi^\star_T$ below}
+By Assumptions~(iii)–(iv),
+\begin{align*}
+\bbE\!\left[\sumtT \sqrt{z_t h_t}\right]
+&\le \sqrt{\rho} \cdot \varrho_0(\pi_T^\star), \\
+\bbE\!\left[\sumtT u_t h_t\right]
+&\le \rho \cdot \varrho_0(\pi_T^\star).
+\end{align*}
+Furthermore, Lemma~21 of \cite{BOBWlinear} gives the lower bound
+    \begin{equation*}
+R_T \ge \frac{\deltamin}{2} \, \bbE[\varrho_0(\pi^\star)] - 2C.
+    \end{equation*}
+
+Balancing both bounds using any $\lambda \in (0,1]$, and applying the inequalities 
+$a x^2 - b x^3 \le \tfrac{4 a^3}{27 b^2}$ 
+and 
+$a x - b x^2 \le \tfrac{a^2}{4b}$ 
+(for $a \ge 0$, $b > 0$), 
+we obtain after simplification:
+\begin{align*}
+R_T \lesssim
+&\frac{(1+\lambda)^3}{\lambda^2} 
+\cdot \frac{\rho \log(\epsilon T)}{\deltamin^2}
++ \frac{(1+\lambda)^2}{\lambda} 
+\cdot \frac{\rho \log(\epsilon T)}{\deltamin} \\
+&\quad + 
+\left( \frac{\sqrt{z_{\max} h_1}}{\epsilon} \right)^{2/3}
++ \sqrt{ \frac{u_{\max} h_1}{\epsilon} }
++ \kappa + 2\lambda C.
+\end{align*}
+
+Choosing $\lambda = \Theta\!\left( 
+\left( \tfrac{\rho \log(\epsilon T)}{C} \right)^{1/3}
+\right)$ 
+and setting $\epsilon = 1 / (\rho^2/\deltamin^3 + C\rho/\deltamin) \le 1/T$
+gives, for $T \ge \tau \coloneqq \tfrac{1}{\deltamin^3} + \tfrac{C}{\deltamin}$,
+\begin{align*}
+R_T \lesssim
+&\frac{\rho}{\deltamin^2} 
+\log_+\!\left( T\deltamin^3 \right)
++ 
+\left(
+\frac{C^2 \rho}{\deltamin^2}
+\log_+\!\left( \frac{T\deltamin}{C} \right)
+\right)^{1/3} \\
+&+ 
+\left( (z_{\max} h_1)^{1/3}
++ \sqrt{u_{\max} h_1} \right)
+\left( \frac{1}{\deltamin^3} + \frac{C}{\deltamin} \right)^{2/3}
++ \kappa,
+\end{align*}
+which concludes the proof.
+\end{proof}
+
+
+
+
+\section{PROOF OF THEOREM~\ref{thm::main}}\label{AppendixRegret}
+
+
+We build on Lemma~\ref{lem::adapt_tsuchaya}, presented and proved in Appendix~\ref{Appendix}, to prove Theorem~\ref{thm::main} by verifying that Algorithm~\ref{alg::FTRL_bobw} satisfies conditions~(i)–(iv) of the lemma. We recall the theorem below, before presenting its proof. 
+
+\MainTheorem*
+
+
+\begin{proof} \DB{Tldr: all this part is shit because it mixes using fixed context and current context, with ambiguous notation that doesn't allow to understand in which case we are.}
+We verify that Algorithm~\ref{alg::FTRL_bobw} satisfies the four conditions of Lemma~\ref{lem::adapt_tsuchaya}.
+
+
+
+Throughout this proof, we work with the \emph{exact} loss estimates $\wh{\theta}_{t, a}$ defined in Eq.~\eqref{eq::estimator}, rather than their MGR approximations $\wt{\theta}_{t, a}$ used in the algorithmic description. 
+This distinction is only technical and does not affect the regret order, since Lemma~\ref{lem::boundBias} guarantees that the cumulative bias introduced by the MGR approximation remains uniformly bounded.
+
+\noindent\textbf{Condition (i).} 
+By definition of the importance-sampled loss (Eq.~\eqref{eq::estimator}), 
+for any $a \in \sbr*{K}$ we have
+    \begin{equation*}
+|\wh{\ell}_{t, a} \eta_t|
+\le \frac{\ell_{t, a}\eta_t}{p_t \lambda_{\min}}
+\le \frac{1}{u_t \lambda_{\min}}
+\le \frac{1 - \alpha}{8} 
+\cdot \frac{1}{\min(q_{t,a_t^\star}, 1 - q_{t,a_t^\star})^{1 - \alpha}}.
+    \end{equation*}
+Hence, the scaled losses $\wh{\ell}_t \eta_t$ satisfy the condition of Lemma~\ref{lem::ub_ftrl_technical}, presented in Appendix~\ref{Appendix}, which provides an upper bound on the penalty term 
+\(\langle q_t - q_{t+1}, \wh{\ell}_t \spr*{x}\rangle - D_t(q_{t+1},q_t)\) 
+appearing in the standard FTRL regret decomposition.
+
+\DB{Imo, has to be re-written from the start with the ghost sample $x$ and with the estimates $\wt \theta_{t, a}$ actually used by FTRL.}
+Since the regret is defined by 
+    \begin{equation*}
+R_T = 
+\bbE\!\left[ 
+\sumtT 
+\left( 
+\langle X_t, \theta_{t,A_t} \rangle 
+- \langle X_t, \theta_{t,\pi^\star(X_t)} \rangle 
+\right) 
++ cK \sumtT p_t
+\right],
+    \end{equation*}
+and $\wh{\theta}_{t, a}$ is an unbiased estimator of $\theta_{t, a}$, we can equivalently write
+    \begin{equation*}
+R_T =
+\bbE\!\left[
+\sumtT 
+\left(
+\langle X_t, \wh{\theta}_{t,A_t} \rangle 
+- \langle X_t, \wh{\theta}_{t,\pi^\star(X_t)} \rangle 
+\right)
++ cK \sumtT p_t
+\right].
+    \end{equation*}
+\DB{This is wrong without using the ghost sample technique, cause the estimates depend on $X_t$ (with some $X_0$, it's OK).}
+
+Fix any context $x \in \bbR^d$.  
+Applying Lemma~\ref{lem::standard_regret_decompo}, we obtain:
+\begin{align*}
+\sumtT 
+\left( 
+\langle x, \wh{\theta}_{t,A_t} \rangle 
+- \langle x, \wh{\theta}_{t,\pi^\star \spr*{x}} \rangle 
+\right)
+\le
+&\quad\underbrace{
+\sumtT \big( \psi_t(q_{t+1}(.|x)) - \psi_{t+1}(q_{t+1}(.|x)) \big)
+}_{\text{stability}} \\[0.3em]
+&+ 
+\underbrace{
+\sumtT \big( 
+\langle q_t(.|x) - q_{t+1}(.|x), \wh{\ell}_t \spr*{x} \rangle 
+- D_t(q_{t+1}(.|x), q_t(.|x))
+\big)
+}_{\text{penalty}} 
++ A + \bar{\beta}\bar{h},
+\end{align*}
+where $A = \psi_{T+1}(\pi^\star(\cdot|x)) - \psi_1(q_1(\cdot|x)) \le \beta_1 \log K$ is independent of $T$ and will be ignored in the sequel (together with $\bar{\beta}\bar{h}$).
+
+\paragraph{Bounding the stability term.}
+By the definition of $\psi_t$, we have
+    \begin{equation*}
+\sumtT 
+\big( \psi_t(q_{t+1}(.|x)) - \psi_{t+1}(q_{t+1}(.|x)) \big)
+\le 
+\sumtT 
+\Big( \frac{1}{\eta_{t+1}} - \frac{1}{\eta_t} \Big) h_{t+1}.
+    \end{equation*}
+\DB{Now here this is were messing up with the notation is confusing: above check which components should depend on $x$.}
+Reindexing $t \mapsto t-1$ yields the equivalent form
+    \begin{equation*}
+\sumtT 
+\Big( \frac{1}{\eta_t} - \frac{1}{\eta_{t-1}} \Big) h_t.
+    \end{equation*}
+
+\paragraph{Bounding the penalty term.}
+Using Lemma~\ref{lem::ub_ftrl_technical} together with Lemma~\ref{lem::bound_squared_loss}, we have
+\begin{align}
+\sumtT 
+\big(
+\langle q_t - q_{t+1}, \wh{\ell}_t \spr*{x} \rangle 
+- D_t(q_{t+1}, q_t)
+\big) 
+&= 
+\sumtT 
+\frac{1}{\eta_t}
+\left(
+\langle q_t - q_{t+1}, \wh{\ell}_t \spr*{x}\eta_t \rangle
+- D_t(q_{t+1}, q_t)
+\right) \nonumber\\
+&\le
+\sumtT 
+\frac{4 \eta_t}{1 - \alpha}
+\left(
+q_{t,a_t^\star}^{2 - \alpha} \wh{\ell}_{t, a_t^\star}^2
++ \sum_{a \neq a_t^\star} q_{t, a}^{2 - \alpha} \wh{\ell}_{t, a}^2
+\right) \label{eq::bad_conditioning} \\
+&\le
+\sumtT 
+\frac{4 d^2 \eta_t}{p_t (1 - \alpha) \lambda_{\min}^2}
+\left(
+q_{t,a_t^\star}^{2 - \alpha}
++ \sum_{a \neq a_t^\star} q_{t, a}^{2 - \alpha}
+\right). \nonumber
+\end{align}
+\DB{Isn't there some $\min(q,1-q)$ at some point in lemma 3? Otherwise why split between $a_t^\star$ and $a\neq a_t^\star$. Not consistent}
+
+\DB{More important: lemma 2 bounds $\bE[\widehat l_{t, a}^2]$ while here you should have a bound on $\bE[q_{t, a}^{2-\alpha} \cdot \widehat\ell_{t, a}^2]$. Transposing previous works we would work on $\bE[\sum_{a=1}^K q_{t, a}^{2-\alpha} \cdot \widehat\ell_{t, a}^2]$ directly.}
+
+Taking expectations over the random context $X_t$, we obtain
+\begin{align*}
+\bbE[R_T]
+&\le 
+\bbE\Bigg[
+\sumtT 
+\Big( \frac{1}{\eta_t} - \frac{1}{\eta_{t-1}} \Big) h_t \\
+&\quad +
+\sumtT 
+\frac{4 d^2 \eta_t}{p_t (1 - \alpha) \lambda_{\min}^2}
+\Big(
+q_{t,a_t^\star}^{2 - \alpha}
++ \sum_{a \neq a_t^\star} q_{t, a}^{2 - \alpha}
+\Big)
++ cK \sumtT p_t
+\Bigg],
+\end{align*}
+which matches the required structure of condition~(i).
+
+\DB{It seems we should not be doing that but instead use a ghost sample to define the regret as in \cite{BOBWhardproblems, BOBWlinear}.}
+
+\paragraph{Condition (ii).}
+Condition~(ii) follows directly from Lemma~\ref{lem::cond_bound_ht}, presented and proved in Appendix~\ref{Appendix}, which guarantees that
+    \begin{equation*}
+\bbE[h_{t+1} \mid \cH_t]
+\le 
+2 \, \bbE[h_t \mid \cH_{t-1}],
+\qquad \forall t \ge 1.
+    \end{equation*}
+
+\paragraph{Conditions (iii) and (iv).}
+Lemma~13 of \cite{BOBWhardproblems} provides an upper bound on the entropy term,
+    \begin{equation*}
+h_t \le \frac{1}{\alpha}(K-1)^{1-\alpha} (1 - q_{t,a_t^\star})^{\alpha},
+    \end{equation*}
+where $a_t^\star \coloneqq \text{arg max}_{a \in \sbr*{K}} \langle X_t, \theta_{t, a} \rangle$ denotes the optimal arm for context $X_t$.
+Moreover, using the definitions of $z_t$ and $u_t$, we obtain:
+\begin{align*}
+z_t
+&= \frac{4 c K d^2}{(1 - \alpha) \lambda_{\min}^2}
+\left(
+\sum_{a \neq a_t^\star} q_{t, a}^{2 - \alpha}
++ (\min(q_{t,a_t^\star}, 1 - q_{t,a_t^\star}))^{2 - \alpha}
+\right) \\
+&\le 
+\frac{8 c K d^2}{(1 - \alpha) \lambda_{\min}^2}
+(1 - q_{t,a_t^\star})^{2 - \alpha}.
+\end{align*}
+Combining the bounds on $h_t$ and $z_t$ yields
+\begin{align*}
+z_t h_t 
+&\le 
+\frac{8 c K d^2 (K-1)^{1-\alpha}}{\alpha\spr*{1 - \alpha}\lambda_{\min}^2}
+(1 - q_{t,a_t^\star})^2,\\
+u_t h_t 
+&\le 
+\frac{8 d \max(c,1)}{\spr*{1 - \alpha}\alpha}(K-1)^{1-\alpha}
+(1 - q_{t,a_t^\star}).
+\end{align*}
+Hence, both conditions are satisfied with
+\begin{align*}
+\sqrt{z_t h_t} &\le \sqrt{\rho}\,(1 - q_{t,a_t^\star}),\\
+u_t h_t &\le \rho\,(1 - q_{t,a_t^\star}),
+\end{align*}
+where
+    \begin{equation*}
+\rho \coloneqq 
+\frac{d}{\lambda_{\min}}
+\max\!\left(
+\sqrt{\frac{8cK(K-1)^{1-\alpha}}{\alpha\spr*{1 - \alpha}}},
+\frac{8 \max(c,1)}{\spr*{1 - \alpha}\alpha}(K-1)^{1-\alpha}
+\right).
+    \end{equation*}
+
+\paragraph{Conclusion.}
+Having verified conditions~(i)–(iv), we can invoke Lemma~\ref{lem::adapt_tsuchaya} to conclude that Algorithm~\ref{alg::FTRL_bobw} enjoys a Best-of-Both-Worlds (BoBW) regret guarantee.  
+To make the constants explicit, note that
+    \begin{equation*}
+h_{\max} \le \frac{K^{1-\alpha}}{\alpha}, \qquad
+z_{\max} = \mathcal{O}\!\left(\frac{cK d^2}{(1 - \alpha)\lambda_{\min}^2}\right), \qquad
+u_{\max} = \mathcal{O}\!\left(\frac{d \max(c,1)}{1 - \alpha}\right).
+    \end{equation*}
+Plugging these into Lemma~\ref{lem::adapt_tsuchaya} gives
+\begin{align*}
+\text{Adversarial regime: } &
+R_T = \mathcal{O}\!\left(
+\left( \frac{cK d^2}{\lambda_{\min}^2} \right)^{1/3} T^{2/3}
++ \sqrt{ \frac{d \max(c,1) T}{\lambda_{\min}} }
+\right),\\
+\text{Corrupted stochastic regime: } &
+R_T = \mathcal{O}\!\left(
+\frac{d \sqrt{\max(c,1)K}}{\lambda_{\min}\deltamin^2}\log(T\deltamin^3)
++ \left(
+\frac{C^2 d \sqrt{\max(c,1)K}}{\lambda_{\min}\deltamin^2}
+\log\!\frac{T\deltamin}{C}
+\right)^{1/3}
+\right).
+\end{align*}
+
+This completes the proof of Theorem~\ref{thm::main}.
+\end{proof}
+
+% === End of Proof or Regret Analysis.tex ===
+
+% === Included from Useful Lemmas.tex ===
+\section{TECHNICAL LEMMAS}
+
+\DB{Below we have a problem, $\lambda_{\min}(\Sigma_{t, a}) \ge p_t \, \lambda_{\min}$ has no reason to hold and this should be fixed.}
+
+\DB{Additionally, we haven't sorted the dimension issue yet. What should be the right dependence in $d$? It's not so clear, but it should appear in the squared loss if we follow previous works: there, $d$ come from using a trace bound instead of our inequalities below. Some of our steps are probably wrong.}
+
+\DB{The following result should bound $\bE[\sum_{a} q_{t, a}^{2-\alpha} \widehat \ell_{t, a}^2]$ or whatever is needed in the part of the proof where it's used.}
+\begin{lemma}\label{lem::bound_squared_loss}
+Let $X_t \in \bbR^d$ be a random context and fix any arm $a \in \sbr*{K}$. 
+
+Under the assumptions of Section~\ref{sec::setting}, we have $\|X_t\|_2 \le 1$ almost surely, and the loss function satisfies $-1 \le \ell_t \spr*{X_t, a} \le 1$.
+
+We also recall that $\Sigma_{t, a}$ is a positive definite matrix such that 
+    \begin{equation*}
+\lambda_{\min}(\Sigma_{t, a}) \ge p_t \, \lambda_{\min},
+    \end{equation*}
+\DB{We should probably adopt a notation $p_t \spr*{x}$, a lot of confusion comes from using $p_t$ for many different things. The above line is clearly wrong (if $p_t$ is $p_t(X_t)$). It is true with $p_{t, \min}\coloneqq \min_{x\in \cX}p_t \spr*{x}$ though, and could be replaced by $\frac{\gamma}{K}$ if we add a forced exploration $\gamma$.}
+and that the importance-weighted estimator is given by
+    \begin{equation*}
+\wh{\theta}_{t, a} 
+\coloneqq \Sigma_{t, a}^{-1} X_t \, \ell_t \spr*{X_t, a} \, \mathbf{1}\{a \in O_t\},
+    \end{equation*}
+where $\mathbb{P}(a \in O_t) = p_t$.
+Then,
+    \begin{equation*}
+\bbE\!\left[\langle X_t, \wh{\theta}_{t, a} \rangle^2\right] 
+\;\le\; \frac{1}{\lambda_{\min}^2 \, p_t}.
+    \end{equation*}
+\end{lemma}
+
+\begin{proof}
+We know that the smallest eigenvalue of $\Sigma_{t, a}$ is $\ge p_t \lambda_{\min}$. 
+    \begin{equation*}
+\|\Sigma_{t, a}^{-1}\|_2 
+\;\le\; \frac{1}{\lambda_{\min}(\Sigma_{t, a})}
+\;\le\; \frac{1}{p_t \lambda_{\min}}.
+    \end{equation*}
+Therefore,
+    \begin{equation*}
+\|\wh{\theta}_{t, a}\|_2
+= \|\Sigma_{t, a}^{-1} X_t \, \ell_t \spr*{X_t, a}\, \mathbf{1}\{a \in O_t\}\|_2
+\le \frac{\|X_t\|_2}{p_t \lambda_{\min}} \, \mathbf{1}\{a \in O_t\}.
+    \end{equation*}
+By the Cauchy–Schwarz inequality,
+    \begin{equation*}
+\langle X_t, \wh{\theta}_{t, a} \rangle^2
+\le \|X_t\|_2^2 \, \|\wh{\theta}_{t, a}\|_2^2
+\le \frac{\|X_t\|_2^4}{p_t^2 \lambda_{\min}^2} \, \mathbf{1}\{a \in O_t\}.
+    \end{equation*}
+Taking expectations and using $\bbE[\mathbf{1}\{a \in O_t\}] = p_t$, we obtain
+    \begin{equation*}
+\bbE\!\left[\langle X_t, \wh{\theta}_{t, a} \rangle^2\right]
+\le \frac{\bbE[\|X_t\|_2^4]}{p_t \lambda_{\min}^2}.
+    \end{equation*}
+Since $\|X_t\|_2 \le \sqrt{d}$ almost surely, it follows that $\bbE[\|X_t\|_2^4] \le 1$, and hence
+    \begin{equation*}
+\bbE\!\left[\langle X_t, \wh{\theta}_{t, a} \rangle^2\right]
+\le \frac{1}{\lambda_{\min}^2 \, p_t}.
+    \end{equation*}
+\end{proof}
+
+\db{(minor for now) Write a few sentences between lemmas. Also, here we just do an unstructured list, but actually the above lemma is crucial, while the following is just a restatement of an existing result. Might be nice to structure this.}
+
+\begin{lemma}[Lemma~14 in \cite{BOBWhardproblems}]\label{lem::ub_ftrl_technical}
+Let $q \in \mathcal{P}_K$ and let $\bar{I} \in \arg\max_{i \in \sbr*{K}} q_i$.  
+Let $l \in \bbR^K$ be such that, for all $i \in \sbr*{K}$,
+    \begin{equation*}
+|l_i| \leq \frac{1 - \alpha}{4} \cdot \frac{1}{\min(q_{\bar{I}}, 1 - q_{\bar{I}})^{1 - \alpha}}.
+    \end{equation*}
+Then, the following bound holds:
+    \begin{equation*}
+\max_{p \in \mathcal{P}_K} \left\{ 
+\langle l, q - p \rangle - D_{-H_\alpha}(p, q) 
+\right\}
+\leq \frac{4}{1 - \alpha} \Bigg( 
+\sum_{i \neq \bar{I}} q_i^{2 - \alpha} l_i^2
++ \min(q_{\bar{I}}, 1 - q_{\bar{I}})^{2 - \alpha} l_{\bar{I}}^2 
+\Bigg)
+    \end{equation*}
+
+\end{lemma}
+
+
+\begin{lemma}\label{lem::standard_regret_decompo}
+Let $x\in\bbR^d$ be any fixed context. For each $t\ge1$, let
+$q_t(\cdot|x)\in\Delta_K$ be the distribution used to sample $A_t$
+given $x$, and let $\pi^{*}(\cdot|x)\in\Delta_K$ be any comparator
+policy. Let $(\psi_t)_{t\ge1}$ be a sequence of
+$\sigma$-strongly convex regularizers on $\Delta_K$, and let
+$D_t(\cdot,\cdot)$ denote the Bregman divergence induced by $\psi_t$.
+Denoting $\wh\ell_t \spr*{x}\in\bbR^K$ for the vector of estimated losses
+at context $x$, with $[\wh\ell_t \spr*{x}]_a \coloneqq \langle x,\wh\theta_{t, a}\rangle$.
+Then
+\begin{align*}
+\bbE\!\left[\sumtT 
+\Big(\langle x,\wh\theta_{t,A_t}\rangle-\langle x,\wh\theta_{t,\pi^{*} \spr*{x}}\rangle\Big)\right]
+&\le
+\bbE\!\left[\sumtT \big(\psi_t(q_{t+1}(.|x))-\psi_{t+1}(q_{t+1}(.|x))\big)\right] \\
+&+ \bbE\!\left[\sumtT \big(\langle q_t(.|x)-q_{t+1}(.|x),\wh\ell_t \spr*{x}\rangle - D_t(q_{t+1}(.|x),q_t(.|x))\big)\right] \\
+&
++ \bbE\!\left[\psi_{T+1}(\pi^{*}(\cdot|x))-\psi_1(q_1(\cdot|x))\right]
++ \bar\beta\,\bar h,
+\end{align*}
+where $\bar h\coloneqq\max_{p\in\Delta_K}H_{\bar\alpha}(p)$ and $\bar\beta\ge0$
+is the coefficient that upper-bounds the change of regularizer in our setting.
+\end{lemma}
+
+\DB{This lemma above uses a fixed context, so is suited for a proof that uses the ghost sample technique. It cannot work for the proof as it is right now.}
+
+\DB{Has to be modified if forced exploration is introduced. See (44) in \cite{BOBWlinear} for their result.}
+
+\begin{proof}
+Conditionally on $x$, $A_t\sim q_t(\cdot|x)$, hence
+    \begin{equation*}
+\bbE\!\left[\langle x,\wh\theta_{t,A_t}\rangle \,\middle|\, x\right]
+= \sum_{a \in \sbr*{K}} q_t(a|x)\,\langle x,\wh\theta_{t, a}\rangle.
+    \end{equation*}
+Therefore,
+\begin{align*}
+\bbE\!\left[\sumtT 
+\big(\langle x,\wh\theta_{t,A_t}\rangle-\langle x,\wh\theta_{t,\pi^{*} \spr*{x}}\rangle\big)\right]
+&=
+\bbE\!\left[\sumtT \sum_{a \in \sbr*{K}}
+\big(q_t(a|x)-\pi^{*}(a|x)\big)\,\langle x,\wh\theta_{t, a}\rangle\right] \\
+&= \bbE\!\left[\sumtT \langle q_t(.|x)-\pi^{*}(\cdot|x),\,\wh\ell_t \spr*{x}\rangle\right].
+\end{align*}
+
+%\red{Don't be lazy! this kind of formulation is not ok in a research paper, mais c vraiment ce que absolument tous les articles font et en vrai c clair, genre c pas psq c un exo qu'on peut pas le citer nan?}
+We now invoke the standard FTRL regret decomposition with time-varying regularizers (see, \eg Exercise~28.12 in \cite{BanditBook}): \DB{I think this works only with the estimate that is actually used in FTRL. So, for us, $\wt \theta_{t, a}$.}  
+for any $q\in\Delta_K$,
+\begin{align*}
+\sumtT \langle q_t(.|x)-q,\,\wh\ell_t \spr*{x}\rangle
+&\le \psi_{T+1}(q)-\psi_1(q_1)
++ \sumtT \big(\psi_t(q_{t+1}(.|x)))-\psi_{t+1}(q_{t+1}(.|x))\big) \\
+&\qquad\qquad
++ \sumtT \big(\langle q_t(.|x)-q_{t+1}(.|x),\wh\ell_t \spr*{x}\rangle - D_t(q_{t+1}(.|x),q_t(.|x))\big).
+\end{align*}
+Choosing $q=\pi^{*}(\cdot|x)$ and taking expectations yields the claim,
+with the additional additive term $\bar\beta\,\bar h$ accounting for the
+regularizer variation bound used in our setup.
+\end{proof}
+
+
+
+
+\begin{lemma}[Lemma~15 of \cite{BOBWhardproblems}]\label{lem::ftrl_smooth_bound}
+Let $l,L \in \R^K$, let $q,r \in \cP_k$ be:
+
+\[q \in \text{arg min}_{p \in \cP_k}\{\inp*{L,p}+\beta(-H_{\alpha}(p))+\bar{\beta}(-H_{\bar{\alpha}}(p))\}\]
+
+\[r \in \text{arg min}_{p \in \cP_k}\{\inp*{L+l,p}+\beta'(-H_{\alpha}(p))+\bar{\beta}(-H_{\bar{\alpha}}(p))\}\]
+
+for the Tsallis entropy $H_{\alpha}$ and $0<\beta<\beta'$. Suppose also that
+
+\[||l||_{\infty}\leq\max(\frac{1-(\sqrt{2})^{\alpha-1}}{2}q_*^{\alpha-1}\beta,\frac{1-(\sqrt{2})^{\bar{\alpha}-1}}{2}q_*^{\bar{\alpha}-1}\bar{\beta})\]
+
+\[0 \leq \beta'-\beta \leq \max((1-(\sqrt{2})^{\alpha-1})\beta,\frac{1-(\sqrt{2})^{\bar{\alpha}-1}}{\sqrt{2}}q_*^{\bar{\alpha}-\alpha}\bar{\beta})\]
+
+Then it holds that $H_{\alpha}(r) \leq 2H_{\alpha}(q)$.
+\end{lemma}
+
+\DB{Check carefully this thing below, cause there might be again the issue of treating some probabilities as fixed while they're not. Note that the ghost sample technique might require that we only have to control the entropy of a fixed context $X_0$, which might simplify things.}
+\begin{lemma}\label{lem::cond_bound_ht}
+Algorithm~\ref{alg::FTRL_bobw} satisfies, for all $t \ge 1$,
+    \begin{equation*}
+\bbE[h_{t+1}\mid \cH_t] \le 2\,\bbE[h_t\mid \cH_{t-1}].
+    \end{equation*}
+\end{lemma}
+
+\begin{proof}
+We first control the key quantities appearing in Lemma~\ref{lem::ftrl_smooth_bound}.
+Recall that $\beta_t = 1/\eta_t$, $\gamma_t = \sqrt{z_t/\beta_t} + u_t/\beta_t$,
+and $h_t = \frac{1}{\alpha}\sum_{i=1}^{K}(q_{t,i}^{\alpha}-q_{t,i})$.
+
+\paragraph{Step 1: Bounding $\sqrt{z_t}$ and $h_t$.}
+By definition of $z_t$ we have
+    \begin{equation*}
+\sqrt{z_t}
+= \sqrt{\frac{4cK d^2}{1-\alpha}
+\Big(\sum_{i\ne I_t}q_{t,i}^{2-\alpha}+q_{t,a_t^\star}^{2-\alpha}\Big)}
+\le \frac{2d\sqrt{Kc}}{\sqrt{1-\alpha}}\,q_{t,a_t^\star}^{\,1-\frac{\alpha}{2}}.
+    \end{equation*}
+In addition, from the properties of the Tsallis entropy (see, \eg, Lemma 13 of \cite{BOBWhardproblems}),
+    \begin{equation*}
+h_t = \frac{1}{\alpha}\sum_{i=1}^{K}(q_{t,i}^{\alpha}-q_{t,i})
+\ge \frac{1-(1/2)^{1-\alpha}}{\alpha}\,q_{t,a_t^\star}^{\alpha}
+\ge \frac{1-\alpha}{4\alpha}\,q_{t,a_t^\star}^{\alpha}.
+    \end{equation*}
+
+\paragraph{Step 2: Bounding the variation of $\beta_t$.}
+From Equation~\ref{Rule2},
+    \begin{equation*}
+\beta_{t+1}-\beta_t
+= \frac{2}{h_t}\sqrt{\tfrac{z_t}{\beta_t}}
++ \frac{u_t}{h_t\beta_t}.
+    \end{equation*}
+Plugging in the bounds on $\sqrt{z_t}$ and $h_t$ gives
+\begin{align*}
+\beta_{t+1}-\beta_t
+&\le \frac{16\alpha d\sqrt{Kc}}{\sqrt{\beta_t}\spr*{1 - \alpha}^{3/2}}\,q_{t,a_t^\star}^{\,1-\frac{3\alpha}{2}}
++ \frac{32\alpha d\max(c,1)}{\sqrt{\beta_t}\spr*{1 - \alpha}^2\lambda_{\min}}\,q_{t,a_t^\star}^{\,1-2\alpha} \\
+&\le \alpha\bar{\beta}\,q_{t,a_t^\star}^{\,1-\frac{3\alpha}{2}}
++ \frac{\alpha\bar{\beta}}{\lambda_{\min}}\,q_{t,a_t^\star}^{\,1-2\alpha} \\
+&\le 2\,\frac{(1-\bar{\alpha})}{\min(1,\lambda_{\min})}\,\bar{\beta}\,q_{t,a_t^\star}^{\,\bar{\alpha}-\alpha}
+\le 2\,\frac{1-(\sqrt{2})^{\bar{\alpha}-1}}{\sqrt{2}}\,
+\bar{\beta}\,q_{t,a_t^\star}^{\,\bar{\alpha}-\alpha}.
+\end{align*}
+Hence, $\beta_{t+1}-\beta_t$ satisfies the second condition of Lemma~\ref{lem::ftrl_smooth_bound}.
+
+\paragraph{Step 3: Bounding the loss magnitude.}
+For any fixed context $x$ and arm $i \in \sbr*{K}$,
+\begin{align*}
+|\wh{\ell}_{t+1,i} \spr*{x}|
+&= |\langle x, \wh{\theta}_{t+1,i} \rangle|
+\le \frac{d}{\lambda_{\min} p_t}
+\le \frac{d}{\lambda_{\min}}\cdot\frac{\beta_t}{u_t} \\
+&= \frac{1-\alpha}{8}\cdot\frac{\beta_t}{q_{t,a_t^\star}^{\,1-\alpha}}
+\le \frac{1-(\sqrt{2})^{\alpha-1}}{2}\cdot\frac{\beta_t}{q_{t,a_t^\star}^{\,1-\alpha}}.
+\end{align*}
+This matches the first smoothness condition of Lemma~\ref{lem::ftrl_smooth_bound}.
+
+\paragraph{Step 4: Applying Lemma~\ref{lem::ftrl_smooth_bound}.}
+Since both smoothness conditions are satisfied, the lemma implies
+    \begin{equation*}
+H_{\alpha}(q_{t+1}) \le 2\,H_{\alpha}(q_t),
+    \end{equation*}
+and therefore $h_{t+1} \le 2h_t$ whenever the context remains fixed.
+
+Taking conditional expectations and using the stationarity of the context distribution then yields
+    \begin{equation*}
+\bbE[h_{t+1}\mid \cH_t]
+\le 2\,\bbE[h_t\mid \cH_{t-1}],
+    \end{equation*}
+which completes the proof.
+\end{proof}
+
+
+\begin{lemma}[Slight adaptation of Theorem~6 of \cite{BOBWhardproblems}]\label{hardthm6}
+
+For all $\epsilon \geq 1/T$, it holds that
+
+\begin{align*}
+&\quad F\left( \beta_{1:T}, z_{1:T}, u_{1:T}, h_{0:T-1} \right) \\
+&\lesssim \min \left\{ 
+\left( \sumtT \sqrt{z_t h_t \log(\epsilon T)} \right)^{2/3} \right. \\
+&\qquad\quad \left. ,\ \left( \frac{ \sqrt{z_{\max} h_{\max}} }{\epsilon} \right)^{2/3},
+\left( \sumtT \sqrt{z_t h_{\max}} \right)^{2/3}
+\right\} \\
+& + \min \left\{ 
+\sqrt{ \sumtT u_t h_t \log(\epsilon T) },\ 
+\frac{ \sqrt{u_{\max} h_{\max}} }{\epsilon },\ 
+\sumtT u_t h_{\max} 
+\right\} \\
+& + \sqrt{ \frac{ z_{\max} }{ \beta_1 } }
++ \frac{ u_{\max} }{ \beta_1 }
++ \beta_1 h_1
+\end{align*}
+
+
+\end{lemma}
+
+\begin{proof}
+This slight adaptation originates from a minor modification of Lemma~4 in \cite{BOBWhardproblems}, where in the first line of equation (24) we instead bound:
+\begin{align*}
+&F\left( \beta_{1:T}, z_{1:T}, u_{1:T}, h_{0:T-1} \right) 
+\leq 2 \sqrt{ \frac{z_1}{\beta_1} } 
++ \frac{u_1}{\beta_1} 
++ \beta_1 h_1 \\
+&\quad + \sum_{t=2}^T \left( 
+2 \sqrt{ \frac{z_t}{\beta_t} } 
++ \frac{u_t}{\beta_t} 
++ (\beta_t - \beta_{t-1}) h_{t-1} 
+\right).
+\end{align*}
+
+
+After this adjustment, the remainder of the proof proceeds identically.
+
+\end{proof}
+
+
+\section{MATRIX GEOMETRIC RESAMPLING}\label{sec::MGR}
+
+Before detailing Algorithm~\ref{alg:MGR}, we elaborate on why using the parameter estimates from Eq.~\eqref{eq::estimator} \antoine{probably meant Equation~\eqref{eq::thetahat}?} would be untractable in practice. To prove this point, we detail the computation of the exact covariance matrix $\Sigma_{t, a}$, which involves evaluating the following conditional expectation
+%
+\begin{align*}
+    \Sigma_{t, a} &= \bbE_t \sbr*{\ind_{\scbr*{a \in O_t}} X_t X_t\transpose}\\
+    &= \sum_{x \in \cX} \bbP \sbr*{X_t = x, a \in O_t \given \cH_{t-1}} x x\transpose\\
+    &= \sum_{x \in \cX} \bbP \sbr*{X_t = x \given \cH_{t-1}} \underbrace{\bbP \sbr*{a \in O_t \given X_t = x, \cH_{t-1}}}_{= p_t \spr*{x}} x x\transpose.
+\end{align*}
+%
+The challenge lies in evaluating the conditional observation probability $p_t \spr*{x}$. Note that in Algorithm~\ref{alg::FTRL_bobw}, $p_t$ was defined unambiguously since it was the observation probability corresponding to the (unique) fixed context $X_t$, computed after it is revealed. Here, $p_t \spr*{x}$ is derived following the same steps, but computed as if context $x$ was observed instead of $X_t$. Doing so requires performing all computations leading to Eq.~\eqref{Rule1} separately for each possible context $x \in \cX$. This results in a computational complexity proportional to the size of the context space, $\abs*{\cX}$, which becomes quickly prohibitive when $\cX$ is large. In addition, we can note that each individual computation requires solving an optimization problem to obtain the FTRL sampling probability (Eq.~\eqref{eq::FTRL}).
+
+To circumvent this limitation, we follow \citet{neu2013efficient, neu2016exploration, BOBWlinear} and use Matrix Geometric Resampling (MGR) to efficiently approximate the \emph{inverse} of the matrix $\Sigma_{t, a}$ directly. It does not need to compute the FTRL sampling allocation over all possible contexts but only on a carefully chosen number of sampled contexts, and only use matrix products (costing $\cO \spr*{d^2}$) but no matrix inversion (costing $\cO \spr*{d^3}$). We recall this procedure in Algorithm~\ref{alg:MGR} below. In the pseudo-code, we denote by $\cB \spr*{p}$ the Bernoulli distribution with parameter $p$.
+
+\begin{algorithm}
+    \caption{Matrix Geometric Resampling (MGR)}
+    \label{alg:MGR}
+    \begin{algorithmic}[1]
+        \Require Sampler of the context distribution $\cD$, number of iterations $M_t$.
+        \State Initialize $\Sigma_t^+ \gets \frac{1}{2}I,\quad A_0 = I$.
+        \For{$i = 1$ to $M_t$}
+            \State Sample $X \sim \cD$.
+            \State Compute probability of observation $p$ as in Step 5 of Algorithm~\ref{alg::FTRL_bobw} if $X_t$ was equal to $X$.
+            \State Sample $b \sim \cB \spr*{p}$.
+            \State Compute $B_i \gets b X X\transpose$.
+            \State Compute $A_i \gets A_{i-1} \spr*{I - \frac12 B_i}$.
+            \State Update $\Sigma_t^+ \gets \Sigma_t^+ + \frac12 A_i$.
+        \EndFor
+        \State \Return $\Sigma_t^+$.
+    \end{algorithmic}
+\end{algorithm}
+
+We now introduce the technical results related to the cost and approximation guarantees of the MGR procedure, which will be used in the regret analysis (see the proof sketch in Section~\ref{sec::regret}).
+
+\begin{lemma}[Adapted from Lemma~9 of \citealp{BOBWlinear}] \label{lem::MGRbound}
+    Denote $\wh{\theta}_{t, a} = \Sigma_{t, a}^{-1} X_t \, \ell_t \spr*{X_t, a} \, \ind_{\scbr*{a \in O_t}}$ and $\wt{\theta}_{t, a} = \Sigma_{t, a}^+ X_t \, \ell_t \spr*{X_t, a} \, \ind_{\scbr*{a \in O_t}}$, where $\Sigma_{t, a}^+$ is obtained via Algorithm~\ref{alg:MGR} with the number of iterations $M_t$ tuned as in Eq.~\eqref{eq::Mt}. Then, for any arm $a \in \sbr*{K}$ and round $t \geq 1$, it holds that
+    %
+    \begin{equation*}
+        \abs*{\bbE \sbr*{\inp*{X_t, \wt{\theta}_{t, a} - \wh{\theta}_{t, a}} \given \cH_{t-1}}} \leq \exp \spr*{- \frac{\ptmin \lambda_{\min}}{2K} M_t}.
+    \end{equation*}
+\end{lemma}
+
+\DB{Again, could only be used by plugging $p_{t,\min}$ or forced exploration instead of $p_t$.}
+
+\begin{proof}
+Let \( \|\cdot\|_{\mathrm{op}} \) denote the operator norm. Denote by \( \wh{\Sigma}_{t, a}^+ \) the random matrix output by the MGR procedure in Algorithm~\ref{alg:MGR}. Under independence assumptions of the geometric resampling steps, we have
+    \begin{equation*}
+\bbE\left[ \prod_{j=1}^i \left(I - \frac{1}{2} B_{j} \right) \right] = \left(I - \frac{1}{2} \Sigma_{t, a} \right)^i,
+    \end{equation*}
+and consequently,
+    \begin{equation*}
+\bbE\left[ \wh{\Sigma}_{t, a}^+ \right] = \frac{1}{2} \sum_{i=0}^{M_t} \left(I - \frac{1}{2} \Sigma_{t, a} \right)^i = \Sigma_{t, a}^{-1} - \left(I - \frac{1}{2} \Sigma_{t, a} \right)^{M_t} \Sigma_{t, a}^{-1}.
+    \end{equation*}
+
+Using this, we compute the expectation of the biased estimator:
+\begin{align*}
+\bbE[\wt{\theta}_{t, a}]
+&= \bbE[\wh{\Sigma}_{t, a}^+ X_t \, \ell_t \spr*{X_t, a} \, \mathbb{I}\{A_t = a\}] \\
+&= \bbE[\wh{\Sigma}_{t, a}^+] \cdot \bbE[X_t \langle X_t, \theta_{t, a} \rangle \, \mathbb{I}\{A_t = a\}] \\
+&= \bbE[\wh{\Sigma}_{t, a}^+] \cdot \bbE[X_t X_t\transpose \, \mathbb{I}\{A_t = a\}] \cdot \theta_{t, a} \\
+&= \left( \Sigma_{t, a}^{-1} - \left(I - \frac12 \Sigma_{t, a} \right)^{M_t} \Sigma_{t, a}^{-1} \right) \cdot \Sigma_{t, a} \cdot \theta_{t, a} \\
+&= \theta_{t, a} - \left(I - \frac12 \Sigma_{t, a} \right)^{M_t} \theta_{t, a}.
+\end{align*}
+
+Hence, the bias is given by:
+    \begin{equation*}
+\bbE[\wt{\theta}_{t, a} - \wh{\theta}_{t, a}] = - \left(I - \frac{1}{2} \Sigma_{t, a} \right)^{M_t} \theta_{t, a}.
+    \end{equation*}
+
+We then bound the inner product as:
+\begin{align*}
+\left| \bbE\left[ \left\langle X_t, \wt{\theta}_{t, a} - \wh{\theta}_{t, a} \right\rangle \, \big| \, \cH_{t-1} \right] \right|
+&\leq \|X_t\|_2 \cdot \|\theta_{t, a}\|_2 \cdot \left\| \left(I - \frac{1}{2} \Sigma_{t, a} \right)^{M_t} \right\|_{\mathrm{op}} \leq \left\| \left(I - \frac{1}{2} \Sigma_{t, a} \right)^{M_t} \right\|_{\mathrm{op}} \\
+&\leq \left(1 - \frac{p_t \lambda_{\min}}{2K} \right)^{M_t} \leq \exp\left( - \frac{p_t \lambda_{\min}}{2K} M_t \right),
+\end{align*}
+where we used \( \|X_t\|_2 \leq 1 \), \( \|\theta_{t, a}\|_2 \leq 1 \), and the bound \( \Sigma_{t, a} \succeq \frac{p_t \lambda_{\min}}{K} I \) in the third inequality (since each arm is observed with probability $p_t$). \DB{Why do we have a $K^{-1}$ factor here?}
+\end{proof}
+
+\begin{lemma}\label{lem::boundBias}
+The cumulative bias introduced by the MGR approximation is uniformly bounded as
+    \begin{equation*}
+\sumtT 
+\max_{a \in \sbr*{K}} 
+\Big| 
+\bbE\big[ \langle X_t, \wt{\theta}_{t, a} - \wh{\theta}_{t, a} \rangle \big]
+\Big|
+\le \frac{\pi^2}{6}.
+    \end{equation*}
+\end{lemma}
+
+\begin{proof}
+From Lemma~\ref{lem::MGRbound} and the definition 
+\(
+M_t = \left\lceil \tfrac{4K}{p_t \lambda_{\min}} \log t \right\rceil,
+\)
+we obtain, conditionally on $\cH_{t-1}$,
+    \begin{equation*}
+\Big| 
+\bbE\big[ \langle X_t, \wt{\theta}_{t, a} - \wh{\theta}_{t, a} \rangle 
+\,\big|\, \cH_{t-1} \big]
+\Big|
+\le 
+\exp\!\left( -\tfrac{p_t \lambda_{\min}}{2K} M_t \right)
+\le \frac{1}{t^2}.
+    \end{equation*}
+Taking total expectation and maximizing over $a \in \sbr*{K}$ yields
+    \begin{equation*}
+\max_{a \in \sbr*{K}}
+\Big|
+\bbE\big[ \langle X_t, \wt{\theta}_{t, a} - \wh{\theta}_{t, a} \rangle \big]
+\Big|
+\le \frac{1}{t^2}.
+    \end{equation*}
+We finally obtain the result by summing over $t$. 
+\end{proof}
+
+
+\section{TIME AND SPACE COMPLEXITY OF ALGORITHM~\ref{alg::FTRL_bobw}}\label{AppendixAlgAnalysis}
+
+
+\db{Propagate the computations below in the main text.}
+
+In this section, we detail the computation of the memory requirement and computation time of Algorithm~\ref{alg::FTRL_bobw}, presented at the end of Section~\ref{sec::algorithm} of the paper.  
+
+At each round \(t\), the algorithm stores the tuple \((X_t, A_t, p_t, q_t)\), which is of negligible size \(\mathcal{O}(d + K)\), together with the parameter estimates \(\wt{\theta}_{t, a}\) for all \(a \in \sbr*{K}\) and \(t \leq T\), which must be kept across rounds to enable information reuse.  
+This requires a total of \(\mathcal{O}(d K T)\) memory.  
+In addition, at each round \(t\), computing the MGR approximation requires storing \(\Sigma_t^+ \in \bbR^{d \times d} \), which leads to an additional temporary cost of \(\mathcal{O}(d^2)\) during the computation of that round. 
+Therefore, with Equation~\eqref{eq::MtO}, the total space complexity is
+    \begin{equation*}
+\mathcal{O}\left(dKT+d^2\right).
+    \end{equation*}
+
+\paragraph{Per-round computational cost.}
+Each round involves two main computational steps:
+(i) solving the FTRL update via convex optimization, and
+(ii) performing Matrix Geometric Resampling (MGR).
+
+\smallskip
+\noindent\textbf{FTRL update.}
+In practice, we solve the FTRL objective up to precision \(\varepsilon_t = \mathcal{O}(1/t^2)\) so that the cumulative optimization error remains finite. Because of that, we ignored this term in the regret bound of Theorem~\ref{thm::main}, which assumes that the computation of the sampling distribution is exact.
+
+Using projected gradient descent, the number of iterations required at round \(t\) is \(\mathcal{O}(\log t)\), 
+and each iteration costs \(\mathcal{O}(d \log d)\).
+Hence, the total cost over \(T\) rounds, that we denote by $\text{Comp}_T^{\mathrm{FTRL}}$, satisfies
+    \begin{equation*}
+\mathcal{O}\!\left( \sumtT d \log t \log d \right)
+= \mathcal{O}(T d \log T \log d).
+    \end{equation*}
+
+\smallskip
+\noindent\textbf{Matrix Geometric Resampling.}
+We recall that \(M_t\) denotes the number of resampling steps performed at round \(t\).
+Let us assume that \(1/p_t = \mathcal{O}(t)\), which essentially corresponds to assuming that the logarithmic regret bound of Theorem~\ref{thm::main} is also a lower bound, which is reasonable from an information-theoretic perspective. Then, since by Eq.~\eqref{eq::Mt} we defined \(M_t\) such that
+\begin{equation}\label{eq::MtO}
+M_t = \mathcal{O}\!\left( \frac{K t \log t}{\lambda_{\min}} \right),
+\end{equation}
+we can define the total computational cost of the MGR procedure at round \(t\) as
+    \begin{equation*}
+\Gamma_t^{\mathrm{MGR}} \lesssim d^2 M_t
+\lesssim \frac{K d^2 t \log t}{\lambda_{\min}}.
+    \end{equation*}
+Summing over all rounds up to \(T\) yields a total computation time $\text{Comp}_T^{\mathrm{MGR}}$ satisfying
+    \begin{equation*}
+\text{Comp}_T^{\mathrm{MGR}} = \sumtT \Gamma_t^{\mathrm{MGR}} 
+\lesssim \frac{K d^2}{\lambda_{\min}} \sumtT t \log t
+\lesssim \frac{K d^2 T^2 \log T}{\lambda_{\min}}.
+    \end{equation*}
+Thus, since the MGR procedure has to be fully rerun at each iteration, its total computational cost scales quadratically in \(T\).
+
+\paragraph{Overall complexity.}
+Combining the two components of the algorithm, we obtain a total computational cost of order $\text{Comp}_T^{\text{total}}=\text{Comp}_T^{\mathrm{FTRL}}+\text{Comp}_T^{\mathrm{MGR}}$, satisfying 
+    \begin{equation*}
+\text{Comp}_T^{\text{total}}\lesssim
+T d \log T \log d
++ \frac{K d^2 T^2 \log T}{\lambda_{\min}}.
+    \end{equation*}
+Treating \(\lambda_{\min}^{-1}\) as a numerical constant, and remarking that the second term (MGR steps) dominates, we obtain that the overall running time of the algorithm scales as
+    \begin{equation*}
+\text{Comp}_T^{\text{total}} \lesssim K d^2 T^2 \log T.
+    \end{equation*}
+
+
+
+\end{document}

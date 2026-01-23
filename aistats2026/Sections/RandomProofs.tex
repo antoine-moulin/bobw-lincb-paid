@@ -1,0 +1,290 @@
+\section{Random Access Proofs}
+
+\textbf{This is just a personal draft, don't read this!}
+
+\subsection{One bandit per context}
+
+In the general case, $\chi$ is just compact, but to simplify we will suppose $\chi$ is finite.
+
+The first "dumb" idea is to just execute 1 bandit algorithm as described in \cite{BOBWhardproblems} for each context.
+
+It works because linear bandits on a constant context is the same as k-armed bandits.
+
+\paragraph{Adversarial case}
+
+\;
+
+In the adversarial case, we have that the regret of one bandit for some constant $C$ is bounded by
+
+\[Reg_T \leq C((ck)^{1/3}T^{2/3}(\log k)^{1/3}+\sqrt{T\log k} + \kappa)\]
+
+We can then bound the regret of the one bandit per context algorithm with
+
+\[Reg_T^{\chi} \leq C(\max_{t_1+\ldots+t_{|\chi|} = T} \sum_{i=1}^{|\chi|} ((ck)^{1/3}t_i^{2/3}(\log k)^{1/3}+\sqrt{t_i\log k} + \kappa))\]
+
+Because $t \rightarrow \sqrt{t}$ and $t \rightarrow t^{2/3}$ are both concave, we have that the max is reached when $\forall i, t_i = \frac{T}{|\chi|}$.
+
+Thus, we have that:
+
+\[Reg_T \leq C|\chi|((ck)^{1/3}\frac{T^{2/3}}{|\chi|^{2/3}} (\log k)^{{1/3} \;+\; \sqrt{\frac{T}{|\chi|}\log k}+ \kappa})\]
+
+Thus we have:
+
+\[Reg_T = O(|\chi|^{1/3}T^{2/3}(\log k)^{1/3}) \;+\; \sqrt{|\chi|T\log k} + |\chi| \kappa \]
+
+\paragraph{Stochastics case} \;
+
+The proof for the corrupted stochastic case is very similar.
+
+Indeed, for some constants $A$ and $C$, we can bound the regret for each bandit by:
+
+\[Reg_T \leq A(\frac{\max(1,c)k\log k}{\Delta_{min}^2}\log(T \Delta_{min}^3)+(\frac{C^2\max(1,c)k\log k}{\deltamin^2}\log(\frac{T\deltamin}{C}))^{1/3}+\kappa')\]
+
+By exactly the same reasoning as for the adversarial case, we have that the worst distribution of contexts is when they are all equally played. We thus have:
+
+\[Reg_T^{\chi} = O(\frac{\max(1,c)k\log k}{\deltamin^2}|\chi|\log(\frac{T}{|\chi|}\deltamin^3)+(\frac{C^2\max(1,c)k\log k}{\deltamin^2}\log(\frac{T\deltamin}{|\chi|C}))^{1/3}+\kappa')\]
+
+Since the strategy of having one bandit per context only makes sense when $\chi = o(T)$, we can consider $\log(\frac{T}{|\chi|}) = \log(T)-\log(|\chi|) \approx \log(T)$. And thus the regret grows linearly with $|\chi|$, and to be more precise, we have :
+
+\[Reg_T^{\chi} = O(|\chi|(\frac{\max(1,c)k\log k}{\deltamin^2}\log(T\deltamin^3)+(\frac{C^2\max(1,c)k\log k}{\deltamin^2}\log(\frac{T\deltamin}{C}))^{1/3}+\kappa'))\]
+
+
+\subsection{Adversarial strategy}
+
+We now build an algorithm to resolve the setting in the adversarial case with a regret of $O(T^{2/3})$, which is optimal because it matches the lower bound of bandits with paid observations shown in \cite{paidobservations} and we know that linear bandits with paid observations is at least as hard since when there is only one contex, then it is equivalent to bandits with paid observationst.
+
+We thus define the following \hyperref[adversarial]{algorithm}
+
+\begin{algorithm}
+	\caption{FTRL for adversarial setting} 
+    \label{adversarial}
+	\begin{algorithmic}[1]
+        \Require $K$ arms
+        \State $\theta_{0,a} \gets 0, \: \forall a \in [K]$
+        \State Initialize $\eta_1$
+		\For {$t=1,2,\ldots T$}
+			\State Observe $X_t$
+            \State Observe $c_{t,a} \: \forall a$
+            \State Compute $q_t$ by FTRL with $\psi_t = -\frac{H}{\eta_t}$, ie :
+                \begin{equation}
+                    q_t(\cdot|X_t) = \text{argmin}_{r \in \Delta(K)} \{\sum_{s=1}^{t-1}\langle r,\hat{l_s}(X_t) \rangle + \psi_t(r) \}
+                \end{equation}
+            with $\hat{l_s}(X_t) := (\langle X_t,\hat{\theta}_{s,1} \rangle, \ldots, \langle X_t,\hat{\theta}_{s,K} \rangle)$
+            \State Compute $p_t$
+            \State Choose arm $A_t$ according to probability $q_t$
+            \State Observe each arm $a$ with probability $p_{t,a}$ and observe $l_t(X_t,A_t) \: \forall a \in O_t$.
+            \State Suffer the loss $l_t(X_t,A_t) + \sum_{a \in O_t}c_{t,a}$.
+            \State Update $\eta_t$ to $\eta_{t+1}$
+		\EndFor
+	\end{algorithmic} 
+\end{algorithm}
+
+
+With the $\theta$ estimator defined as
+
+\begin{equation}
+    \hat{\theta}_{t,a} = \Sigma_{t,a}^{-1}X_tl_t(X_t,a)\ind_{a \in O_t}
+\end{equation}
+
+with $\Sigma_{t,a} = E_t(\ind_{a \in O_t}X_tX_t^T)$
+
+\begin{theorem}
+    The algorithm \hyperref[adversarial]{1} has a regret of $O(T^{2/3})$ in the adversarial setting.
+\end{theorem}
+
+\begin{lemma}
+    Let $X_0$ be a random variable following the same law as every $X_t$.
+
+    We then define $R_T(X_0)$ as the regret suffered by Algorithm \hyperref[adversarial]{1} when all contexts are independent and follow the same law as $X_0$.
+
+    Thus, we have : \[R_T(X_0) \leq \sum_{t=1}^{T} (\frac{1}{\eta_{t+1}} - \frac{1}{\eta_{t}}) H(q_{t+1}(\cdot|X_0)) \: +  \: \sum_{t=1}^{n} \sum_{a \in [K]} (\eta_tq_{t,a} \lan{X_0,\hat{\theta}_{t,a}}^2 + c_{t,a}p_{t,a}) \: + \: \frac{\ln K}{\eta_1} \]
+\end{lemma}
+
+
+This lemma corresponds to Lemma 1 of \cite{BOBWlinear} and the proof can be adapted from it using both the facts that the algorithm here uses exact estimators instead of biased ones and that there is no forced exploration here.
+
+\begin{lemma}
+    \begin{equation}
+        E(\lan{X_0,\hat{\theta}_{t,a}}^2) \leq \frac{1}{p_{t,a}}
+    \end{equation}
+\end{lemma}
+
+\begin{proof}
+
+First, we can observe that $\Sigma_{t,a} = p_{t,a}\text{Cov}(X_0)$, with $\text{Cov}(X_0)$ being the covariance matrix of $X_0$.
+
+We therefore have : 
+\begin{align*}
+    E(\lan{X_0,\hat{\theta}_{t,a}}^2) =& E(X_t^T\Sigma_{t,a}^{-1}X_t \: X_t^T\Sigma_{t,a}^{-1}X_tl_t(X_t,a)^2\ind_{a \in O_t}) \\
+    =& E(X_t^T\text{Cov}(X_0)^{-1}X_t \: X_t^T\text{Cov}(X_0)^{-1}X_tl_t(X_t,a)^2\frac{\ind_{a \in O_t}}{p_{t,a}^2})\\
+    =& \frac{1}{p_{t,a}}E(X_t^T\text{Cov}(X_0)^{-1}X_t \: X_t^T\text{Cov}(X_0)^{-1}X_tl_t(X_t,a)^2\frac{\ind_{a \in O_t}}{p_{t,a}})\\
+    =& \frac{l_t(X_0,a)^2}{p_{t,a}}
+\end{align*}
+
+And because $l_t(X_0,a) \leq 1$, we thus have $E(\lan{X_0,\hat{\theta}_{t,a}}^2) \leq \frac{1}{p_{t,a}}$.
+
+\end{proof}
+
+\begin{proof}{of theorem 1. }
+From Lemma 1, we have:
+\[
+R_T(X_0) \leq 
+\underbrace{\sum_{t=1}^{T} \left(\frac{1}{\eta_{t+1}} - \frac{1}{\eta_{t}}\right) H(q_{t+1}(\cdot|X_0))}_{\text{Term A}} 
++ 
+\underbrace{\sum_{t=1}^{n} \sum_{a \in [K]} (\eta_tq_{t,a} \lan{X_0,\hat{\theta}_{t,a}}^2 + c_{t,a}p_{t,a})}_{\text{Term B}} 
++ 
+\frac{\ln K}{\eta_1}
+\]
+
+Using Lemma 2, we can bound term B.
+\[\text{Term B} \leq \sum_{t=1}^{n} \sum_{a \in [K]} (\eta_tq_{t,a} \frac{1}{p_{t,a}} + c_{t,a}p_{t,a})\]
+
+We thus need to define $p_{t,a}$ as the value that minimizes this amount.
+
+We thus have
+\[p_{t,a} = \sqrt{\frac{\eta_tq_t(a|X_0)}{c_{t,a}}}\]
+
+And thus:
+\[\text{Term B} \leq 2 \sum_{t=1}^{n} \sum_{a \in [K]} \sqrt{\eta_tq_t(a|X_0)c_{t,a}}\]
+
+By fixing $\eta_t = \frac{1}{t^{2/3}}$, we can now bound the regret:
+\begin{align*}
+    R_T(X_0) \leq& \sum_{t=1}^{T} \left(\frac{1}{\eta_{t+1}} - \frac{1}{\eta_{t}}\right) H(q_{t+1}(\cdot|X_0)) + 2 \sum_{t=1}^{n} \sum_{a \in [K]} \sqrt{\eta_tq_t(a|X_0)c_{t,a}} + \frac{\ln K}{\eta_1}\\
+    \leq& T^{2/3} \ln{K} + 2 \sqrt{c_{\text{max}}} \sqrt{K} \sum_{t=1}^{n}\sqrt{\eta_t} + \frac{\ln K}{\eta_1}\\
+    =& T^{2/3\ln{K}}+2 \sqrt{c_{\text{max}}}\sqrt{K}T^{2/3}+ \frac{\ln K}{\eta_1}\\
+    =& O(T^{2/3})
+\end{align*}
+where the second inequality comes from the fact that $H(q_{t+1}(\cdot|X_0)) \leq \ln{K}$ and that $\sum_{a \in [K]} \sqrt{q_t(a|X_0)} \leq \sqrt{K}$
+
+\end{proof}
+
+\subsection{First try at BOBW}
+
+The general idea is that we have to define a good $\eta_t$ so that both term A and term B compensate in both adversarial and stochastics case.
+
+Lemma 22 from \cite{BOBWlinear} tells us that in the stochastics case we have $\sum_{t}h_t = O(\ln T)$ (because to minimize $R_T$, $\rho_0(\pi^*) = O(1)$).
+
+
+The general idea is that in the \textbf{adversarial case}, we typically have $h_t \approx 1$, whereas in the \textbf{stochastic case}, we rather have $h_t \approx \frac{1}{t}$. But both approximations are somewhat idealized and not really accurate in practice.
+
+What we actually need is to obtain \textbf{good stability guarantees on the $h_t$}, and this should hold \textbf{both in the stochastic and adversarial settings}.
+
+One possible approach would be to try to prove by induction that:
+
+\[
+\mathbb{E}[h_{t+1}] \leq 2\mathbb{E}[h_t]
+\]
+
+using some kind of \emph{entropy smoothing}. If the constants combine nicely, this might be sufficient to ensure good control.
+
+
+But an other idea works better, we can predict based on what we saw until then.
+
+
+If we replace $h_t$ by its prediction, ie $\frac{\sum_{s=1}^t h_s}{t}$, then I think it works !
+
+We then have:
+
+\[\eta_t = \frac{(\sum_{s=1}^th_s)^{4/3}}{\frac{\sum_{s=1}^th_s}{t}t^2} = \frac{(\sum_{s=1}^th_s)^{1/3}}{t}\]
+
+In the adversarial case :
+
+\[\sum_{t=1}^T \sqrt{\eta_t} \leq \sum_{t=1}^T \sqrt{\frac{(h_{max}t)^{1/3}}{t}} \approx \sum_{t=1}^T \frac{1}{t^{1/3}} \approx T^{2/3}\]
+
+
+\begin{align*}
+    \sum_{t=1}^{T} \left(\frac{1}{\eta_{t+1}} - \frac{1}{\eta_{t}}\right) H(q_{t+1}(\cdot|X_0)) &= \sum_{t=1}^{T} (\frac{t+1}{(\sum_{s=1}^{t+1}h_s)^{1/3}} - \frac{t}{(\sum_{s=1}^th_s)^{1/3}}) h_{t+1}\\
+    &\leq \frac{1}{(\sum_{s=1}^th_s)^{1/3}}h_{t+1}\\
+    &\leq 2\frac{1}{(\sum_{s=1}^{t+1}h_s)^{1/3}}h_{t+1}
+\end{align*}
+
+Where the last inequality comes from the fact that $(\sum_{s=1}^{t+1}h_s)^{1/3} \leq 2(\sum_{s=1}^{t}h_s)^{1/3}$ because each $h_t$ can add at most $h_{max}$ and that $h_1 = h_{max}$ and that $t \rightarrow t^{1/3}$ is 1-smooth over $[1,+\infty[$.
+
+We now define $H_t = \sum_{s=1}^{t}h_s$.
+
+And now we have that
+
+\[\sum_{t=1}^{T} \left(\frac{1}{\eta_{t+1}} - \frac{1}{\eta_{t}}\right) H(q_{t+1}(\cdot|X_0)) \leq 2\sum_{t=1}^T \frac{h_{t+1}}{H_{t+1}^{1/3}} \leq 2\sum_{t=1}^T \frac{H_{t+1} - H_t}{H_{t+1}^{1/3}}\]
+
+By defining $f : t \rightarrow \frac{1}{t^{1/3}}$, we can use the sum-integral comparaison and we get:
+
+\begin{align*}
+    \sum_{t=1}^T \frac{H_{t+1} - H_t}{H_{t+1}^{1/3}} &\leq \int_{H_1}^{H_T} \frac{dH}{H^{1/3}}\\
+    &\leq H_T^{2/3}
+\end{align*}
+
+This 2 combined give us the result for the adversarial setting.
+
+\smallskip
+
+Now we do the stochastics case.
+
+\[\sum_{t=1}^T \sqrt{\eta_t} \leq \sqrt{\frac{H_t^{1/3}}{t}} \leq \ln T \: \sqrt{T}\]
+
+\[\sum_{t=1}^{T} \left(\frac{1}{\eta_{t+1}} - \frac{1}{\eta_{t}}\right) H(q_{t+1}(\cdot|X_0)) \leq \sum_{t=1}^{T} 1*h_{t+1} \leq \ln T\]
+
+This 2 combined give us the result of $(O(\sqrt{T}))$ which is not really good.
+
+\smallskip
+
+By setting $\eta_t = \frac{H_t^{2/3}}{t^{2/3}}$, using the same reasonement, we get a regret in the stochastics case of $O(T^{1/3})$.
+
+However, I don't think it's possible to have better, because with this equations the stochastics case is just not improvable.
+
+\subsection{A better attempt}
+
+So we know that there exists no learning rate for this formula that can have optimal BOBW, so we need to do something smarter.
+
+We will thus use the framework presented in \cite{BOBWhardproblems}, though we will need to change it a bit to fit in.
+
+The general idea of this framework is to go from a formula of 
+
+\[R_T(X_0) \leq \sum_{t=1}^{T} \left(\frac{1}{\eta_{t+1}} - \frac{1}{\eta_{t}}\right) H(q_{t+1}(\cdot|X_0)) + \sum_{t=1}^{n} \frac{\eta_t}{p_t} + \sum_{t=1}^{n} p_t\]
+
+to a formula of
+
+\[R_T(X_0) \leq \sum_{t=1}^{T} \left(\frac{1}{\eta_{t+1}} - \frac{1}{\eta_{t}}\right) H(q_{t+1}(\cdot|X_0)) + \sum_{t=1}^{n} \frac{\eta_tz_t}{p_t} + \sum_{t=1}^{n} p_t\]
+
+with a $z_t$ that hopefully goes to 0 in the stochastics case.
+
+\smallskip
+
+We will thus switch from the Shanon entropy to the Tsallis entropy.
+
+\smallskip
+
+For a certain context $x \in X$, we have the following expression for the regret, if we exclude the cost of observations:
+
+\begin{align*}
+    R'_T(x) &= E_{A_t}\left(\sum_{t=1}^T(\lan{x,\hat{\theta}_{t,A_t}} - \lan{x,\hat{\theta}_{t,\pi^*(x)}})\right)\\
+    &\leq \sum_{t=1}^T (\psi_t(q_{t+1}) - \psi_{t+1}(q_{t+1})) + \sum_{t=1}^T (\lan{q_t - q_{t+1},\hat{l}_t(x)} - D_t(q_{t+1},q_t)) + O(1)\\
+    &\leq \sum_{t=1}^T (\psi_t(q_{t}) - \psi_{t+1}(q_t)) + \frac{4\eta_t}{1-\alpha} (\sum_{t=1}^T (q_{t*}^{2-\alpha}\hat{l}_{tI_t}^{2} + \sum_{i \neq I_t} q_{ti}^{2-\alpha}\hat{l}_{ti}^{2}))\\
+    &\leq \sum_{t=1}^T (\frac{1}{\eta_{t+1}}-\frac{1}{\eta_{t}})h_t \: + \: \sum_{t=1}^T \frac{4\eta_t}{p_t(1-\alpha)}(q_{t*}^{2-\alpha} + \sum_{i \neq I_t} q_{ti}^{2-\alpha})
+\end{align*}
+
+where the first inequality comes from adapting lemma 6 of \cite{BOBWlinear} since we have no forced exploration,
+and where the second inequality comes from lemma 14 of \cite{BOBWhardproblems}.
+
+Since it is true for any context $x$, it is still true if we replace the fixed context by a random variable $X_0$.
+
+\smallskip
+
+By fixing $\gamma_t = ckp_t, z_t = \frac{4ck}{1-\alpha}(q_{t*}^{2-\alpha} + \sum_{i \neq I_t} q_{ti}^{2-\alpha})$, we have that:
+
+\[R_T(X_0) \leq  \sum_{t=1}^T (\frac{1}{\eta_{t+1}}-\frac{1}{\eta_{t}})h_t \: \: \sum_{t=1}^T \frac{z_t \eta_t}{\gamma_t} + \sum_{t=1}^T \gamma_t\]
+
+which is the what conditions (i) and (ii) serve to show in the framework proposed by \cite{BOBWhardproblems}. We can thus skip this 2 conditions.
+
+We then need to respect condition (iii), ie $E(h_{t+1}) \leq O(E(h_t))$.
+
+From equation (104) of \cite{BOBWhardproblems}, we have that $\frac{1}{\eta_{t+1}} - \frac{1}{\eta_{t}} \leq 2\frac{1-(\sqrt{2})^{\bar{\alpha}-1}}{\sqrt{2}}\bar{\beta}q_{t*}^{\bar{\alpha}-\alpha}$.
+
+We can thus use lemma 15 of \cite{BOBWhardproblems} and we get that $E(h_{t+1}) \leq 2E(h_t)$.
+
+Ouais en gros juste tout marche pareil ptdr c mega nul.
+
+\[z_th_t \leq O((1-q_{ta*})^{2-\alpha}(1-q_{ta*})^\alpha) = O((1-q_{ta*})^2)\]
+
+Thus, $\sqrt{z_th_t} = O(1-q_{ta*})$
+
+And $u_t = O((1-q_{ta*})^{1-\alpha})$, thus $u_th_t = O(1-q_{ta*})$.

@@ -1,0 +1,244 @@
+%\usepackage[utf8]{inputenc} % allow utf-8 input
+%\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+%\usepackage{hyperref}  
+%\usepackage{xcolor}
+%\definecolor{Bleu}{RGB}{30,144,255}
+%\hypersetup{colorlinks,citecolor=Bleu}
+%\usepackage{url}            % simple URL typesetting
+%\usepackage{booktabs}       % professional-quality tables
+%\usepackage{amsfonts}       % blackboard math symbols
+%\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+%\usepackage{microtype}      % microtypography
+%
+%
+%
+%%%%%%%%%%%%% My additional packages and commands %%%%%%%%%%%%%
+%
+%\usepackage[normalem]{ulem}
+%\useunder{\uline}{\ul}{}
+%\usepackage{amsmath}
+%\usepackage{amsfonts}
+%\usepackage{algorithmic}
+%\usepackage{graphicx}
+%\usepackage{enumerate}% http://ctan.org/pkg/enumerate
+%%\usepackage{enumitem}
+%%\usepackage[section]{placeins}\usepackage{float}
+%%\usepackage[margin=0.8in]{geometry}
+\usepackage{tikz,mathtools}
+%\usepackage{amsthm}
+%\usepackage{caption}
+%\usepackage{subcaption}
+%\usepackage{indentfirst}
+%\usepackage{algorithm}
+%\usepackage{algorithmic}
+
+%% theorems and co
+% \newtheorem*{TheoNonNumerote}{Theorem}
+% \newtheorem*{LemNonNumerote}{Lemma}
+% \newtheorem*{definition}{Definition}
+\newtheorem{theorem}{Theorem} %[section]
+\newtheorem{corollary}{Corollary} %[theorem]
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+\newtheorem{assumption}{Assumption} %[section]
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{conjecture}{Conjecture}
+
+
+% maths stuff
+\usepackage{bm}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cM}{\mathcal{M}}
+\newcommand{\cI}{\mathcal{I}}
+\newcommand{\cJ}{\mathcal{J}}
+\newcommand{\cG}{\mathcal{G}}
+\newcommand{\cH}{\mathcal{H}}
+\newcommand{\cE}{\mathcal{E}}
+\newcommand{\cB}{\mathcal{B}}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\cZ}{\mathcal{Z}}
+\newcommand{\cL}{\mathcal{L}}
+\newcommand{\cC}{\mathcal{C}}
+\newcommand{\cW}{\mathcal{W}}
+\newcommand{\cU}{\mathcal{U}}
+\newcommand{\cX}{\mathcal{X}}
+\newcommand{\cR}{\mathcal{R}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\cK}{\mathcal{K}}
+\newcommand{\cO}{\mathcal{O}}
+\newcommand{\cY}{\mathcal{Y}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\cV}{\mathcal{V}}
+
+% argmax and co
+\newcommand{\argmin}[1]{\underset{#1}{\text{argmin}}}
+\newcommand{\argmax}[1]{\underset{#1}{\text{argmax}}}
+\newcommand{\aargmax}{\text{argmax}}
+\newcommand{\aargmin}{\text{argmin}}
+\newcommand{\wt}[1]{\widetilde{#1}}
+\newcommand{\wh}[1]{\widehat{#1}}
+
+% probability
+\newcommand{\bP}{\mathbb{P}}
+\newcommand{\bE}{\mathbb{E}}
+%\newcommand{\ind}{\mathds{1}}
+\newcommand{\ind}{\mathds{1}}
+%\newcommand{\mathbbm}[1]{\text{\usefont{U}{bbm}{m}{n}#1}}
+\newcommand{\kl}{\mathrm{kl}}
+\newcommand{\dm}{\mathrm{d}}
+
+% bandit and algorithm specific notation 
+\newcommand{\K}{\{1,\dots,K\}}
+\newcommand{\SP}{\ensuremath{\mathrm{SP}}}
+\newcommand{\UCB}{\mathrm{UCB}}
+
+% working together
+%\usepackage{todonotes}
+%\usepackage[disable]{todonotes}
+%\newcommand{\blue}{\color{blue}}
+%\newcommand{\red}{\color{red}}
+%\newcommand{\black}{\color{black}}
+%\newcommand{\style}[1]{\todo[color=pink, inline]{\small #1}}
+%\newcommand{\todoe}[1]{\todo[color=green!40, inline]{\small #1}}
+%%\newcommand{\todoe}[1]{}
+%\newcommand{\todoesmall}[1]{\todo[color=green!40]{\small #1}}
+%\newcommand{\tododo}[1]{\todo[color=blue!25, inline]{\small #1}}
+%\newcommand{\oam}[1]{\todo[color=orange!40, inline]{\small #1}}
+%\newcommand{\PS}[1]{\todo[color=green!33, inline]{\small \textbf{PS: } #1}}
+
+% algorithms
+\newcommand{\RBSSDA}{\ensuremath{\mathrm{RB}\text{-}\mathrm{SDA}}}
+\newcommand{\SSDA}{\ensuremath{\mathrm{SDA}}}
+\newcommand{\SDA}{\ensuremath{\mathrm{SDA}}}
+\newcommand{\SPSSDA}{\ensuremath{\mathrm{SP}\text{-}\mathrm{SDA}}}
+\newcommand{\WRSSDA}{\ensuremath{\mathrm{WR}\text{-}\mathrm{SDA}}}
+\newcommand{\LBSSDA}{\ensuremath{\mathrm{LB}\text{-}\mathrm{SDA}}}
+\newcommand{\LDSSSDA}{\ensuremath{\mathrm{LDS}\text{-}\mathrm{SDA}}}
+\newcommand{\sampler}{independent sampler}
+\newcommand{\RB}{\ensuremath{\mathrm{RB}}}
+\newcommand{\WR}{\ensuremath{\mathrm{WR}}}
+
+\newcommand{\GNPTS}{DS}
+\newcommand{\MCVTS}{$\alpha$-Multinomial-TS}
+\newcommand{\CVTS}{$\alpha$-NPTS}
+
+\newcommand{\CVAR}{\text{CVaR}}
+\newcommand{\cN}{\mathcal{N}}
+\newcommand{\kinf}{\cK_{\inf}}
+\newcommand{\kinfcv}{\cK_{\inf}^{\alpha,\cD}}
+\newcommand{\kinfcvx}{\cK_{\inf}^{\alpha,\cX}}
+\newcommand{\kinfcvxm}{\mathcal{G}_{\inf}^{\alpha,\cX}}
+\newcommand{\KL}{\mathrm{KL}}
+
+\newcommand{\Sm}{\cS_{m, \cX}^\alpha(c)}
+\newcommand{\Smp}{\cU_{m, \cX}^\alpha(c)}
+\newcommand{\Sa}{\cS_{\cX}^\alpha(c)}
+\newcommand{\Sap}{\cU_{\cX}^\alpha(c)}
+
+\newcommand{\MDir}{\hat{p}_{k,t}}
+\newcommand{\betaDir}{\hat{\beta}_{k,t}}
+\newcommand{\Dir}{\text{Dir}}
+
+% redefinition of some commands 
+\let\ln\relax
+\DeclareMathOperator{\ln}{ln}
+\let\epsilon\relax
+\DeclareMathOperator{\epsilon}{\varepsilon}
+\DeclareMathOperator*{\esssup}{ess\,sup}
+
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathreplacing,calc}
+\newcommand{\tikzmark}[1]{\tikz[overlay,remember picture] \node (#1) {};}
+
+\newcommand*{\AddNote}[4]{%
+	\begin{tikzpicture}[overlay, remember picture]
+	\draw [decoration={brace,amplitude=0.5em},decorate,ultra thick,red]
+	($(#3)!(#1.north)!($(#3)-(0,1)$)$) --  
+	($(#3)!(#2.south)!($(#3)-(0,1)$)$)
+	node [align=center, text width=2.5cm, pos=0.5, anchor=west] {#4};
+	\end{tikzpicture}
+}%
+
+\newcommand{\sgone}{\mathrm{SG}_1}
+\newcommand{\sgtwo}{\mathrm{SG}_2}
+\newcommand{\sgthree}{\mathrm{SG}_2}
+\newcommand{\gstar}{{G^*}}
+\newcommand{\napier}{\mathrm{e}}
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\e}{\mathrm{e}}
+
+\newcommand{\since}[1]{\quad\left(\mbox{#1}\right)}
+\newcommand{\rd}{\mathrm{d}}
+\newcommand{\ep}{\varepsilon}
+\newcommand{\nn}{\nonumber}
+\newcommand{\n}{\nonumber}
+
+\newcommand{\TS}{TS$^\star$}
+
+\newcommand{\red}{\textcolor{red}}
+\newcommand{\blue}{\textcolor{blue}}
+\newcommand{\Loja}{Łojasiewicz}
+
+\usepackage{soul}
+\newcommand{\revrem}[1]{\textcolor{blue}{\st{#1}}}
+
+\newcommand{\SGB}{\texttt{SGB}{ }}
+
+\newcommand{\db}[1]{\textcolor{purple}{\#DB: #1 \#}}
+
+
+
+% EJ:
+
+% round brackets
+\newcommand{\lrb}[1]{\left(#1\right)}
+\newcommand{\brb}[1]{\bigl(#1\bigr)}
+\newcommand{\Brb}[1]{\Bigl(#1\Bigr)}
+\newcommand{\bbrb}[1]{\biggl(#1\biggr)}
+\newcommand{\Bbrb}[1]{\Biggl(#1\Biggr)}
+% square brackets
+\newcommand{\lsb}[1]{\left[#1\right]}
+\newcommand{\bsb}[1]{\bigl[#1\bigr]}
+\newcommand{\Bsb}[1]{\Bigl[#1\Bigr]}
+\newcommand{\bbsb}[1]{\biggl[#1\biggr]}
+\newcommand{\Bbsb}[1]{\Biggl[#1\Biggr]}
+% curly brackets
+\newcommand{\lcb}[1]{\left\{#1\right\}}
+\newcommand{\bcb}[1]{\bigl\{#1\bigr\}}
+\newcommand{\Bcb}[1]{\Bigl\{#1\Bigr\}}
+\newcommand{\bbcb}[1]{\biggl\{#1\biggr\}}
+% ceiling
+\newcommand{\lce}[1]{\left\lceil#1\right\rceil}
+\newcommand{\bce}[1]{\bigl\lceil#1\bigr\rceil}
+\newcommand{\Bce}[1]{\Bigl\lceil#1\Bigr\rceil}
+\newcommand{\bbce}[1]{\biggl\lceil#1\biggr\rceil}
+% floor
+\newcommand{\lfl}[1]{\left\lfloor#1\right\rfloor}
+\newcommand{\bfl}[1]{\bigl\lfloor#1\bigr\rfloor}
+\newcommand{\Bfl}[1]{\Bigl\lfloor#1\Bigr\rfloor}
+\newcommand{\bbfl}[1]{\biggl\lfloor#1\biggr\rfloor}
+% abs
+\newcommand{\labs}[1]{\left\lvert#1\right\rvert}
+\newcommand{\babs}[1]{\bigl\lvert#1\bigr\rvert}
+\newcommand{\Babs}[1]{\Bigl\lvert#1\Bigr\rvert}
+\newcommand{\bbabs}[1]{\biggl\lvert#1\biggr\rvert}
+% norm
+\newcommand{\lno}[1]{\left\lVert#1\right\rVert}
+\newcommand{\bno}[1]{\bigl\lVert#1\bigr\rVert}
+\newcommand{\Bno}[1]{\Bigl\lVert#1\Bigr\rVert}
+\newcommand{\bbno}[1]{\biggl\lVert#1\biggr\rVert}
+% angle
+\newcommand{\lan}[1]{\left\langle#1\right\rangle}
+\newcommand{\ban}[1]{\bigl\langle#1\bigr\rangle}
+\newcommand{\Ban}[1]{\Bigl\langle#1\Bigr\rangle}
+\newcommand{\bban}[1]{\biggl\langle#1\biggr\rangle}
+
+\newcommand{\deltamin}{\Delta_{\text{min}}}
+\newcommand{\sube}{\subseteq}
+\newcommand{\rchi}{\raisebox{2pt}{$\chi$}}
+%%%

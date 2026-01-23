@@ -1,0 +1,70 @@
+\section{PROBLEM DEFINITION}\label{sec::setting}
+
+
+In this section we formalize the setting of \emph{linear bandits with paid observations}, and state the main assumptions used in the analysis presented in Section~\ref{sec::regret}. 
+
+\paragraph{Interaction protocol} The interaction between the learning agent and the environment has a total duration of $T \in \N$ time steps, where $T$ is unknown to the learner. Context vectors are drawn independently from a fixed distribution $\mathcal{D}$ supported on a compact, full-dimensional subset $\mathcal{X} \subseteq \mathbb{R}^d$. At each round $t$, the following steps occur:
+\begin{enumerate}
+    \item For each action $a \in [K] := {1,\ldots,K}$, the environment selects a loss parameter $\theta_{t,a} \in \mathbb{R}^d$.
+\item A context $X_t \in \mathcal{X}$ is drawn from $\mathcal{D}$.
+\item The learner observes $X_t$, chooses an action $A_t \in [K]$, and an observation set $O_t \subseteq [K]$.
+\item The learner incurs loss $l_t(X_t,A_t)+c|O_t|$, where $l_t$ is a loss function that depends on the environment parameters $(\theta_{t,a})_{a\in[K]}$, $c \in \mathbb{R}_{>0}$ is the known unit cost of observation, and $|O_t|$ is the cardinality of the observation set. It then observes the losses $\{l_t(X_t,o) : o \in O_t\}$.
+\end{enumerate}
+
+Following \citet{SeldinS14}, the learner may query multiple arms in each round, paying cost $c$ per queried arm. When $c=0$, the learner is incentivized to query all arms, recovering the \emph{full-information} (or ``experts'') setting. 
+
+\paragraph{Assumptions} To enable algorithm design and analysis, we adopt standard assumptions from the linear contextual bandit literature \citep{BOBWlinear}:
+
+\begin{enumerate}
+    \item $||X||_2 \leq 1$ almost surely.
+    \item $\forall t\in[T],a\in[K], \; ||\theta_{t,a}||_2 \leq 1$.
+    \item $\forall t\in[T], x\in \rchi,a\in[K]$, $l_t(x,a) \in [-1,1]$.
+\end{enumerate}
+We denote by $\Sigma = \mathbb{E}_{X \sim \mathcal{D}}[XX^\top] \succ 0$ the covariance matrix of the context distribution, and by $\lambda_{\min}>0$ its minimum non zero eigenvalue, assumed to be known to the learner. While the learner does not know $\mathcal{D}$ in full, we assume access to independent samples from $\mathcal{D}$ between rounds, for instance through a simulator.
+
+    %    We emphasize that full knowledge of the distribution $\mathcal{D}$ is not required. However, our algorithm relies on prior knowledge of $\lambda_{\min}$, the minimal eigenvalue of the covariance matrix $\Sigma$, and on access to a sampling oracle from $\mathcal{D}$ for the implementation of Matrix Geometric Resampling (see Algorithm~\ref{alg:MGR}).
+%We do not assume full knowledge of the distribution $\mathcal{D}$, but assume that in between rounds the learner can request as many independent samples from $\mathcal{D}$ as they need (for instance, via access to a simulator).
+
+We now define how the loss $l_t(x,a)$ is constructed in each of the regimes considered in this work, for a given step $t\in [T]$, context $x\in \cX$ and arm $a \in [K]$.
+
+\paragraph{Adversarial regime} The loss satisfies $l_t(X_t,a) := \lan{X_t,\theta_{t,a}}$, where $\theta_{t,a}$ is chosen by an \emph{oblivious} adversary: the entire sequence $(\theta_{t,a})_{t\in[T], a \in [K]}$ can be arbitrary, but is fixed before the interaction starts.
+
+%More precisely, the adversary has full knowledge of the algorithm before making its choice, but is unaware of the internal randomness of the algorithm during its execution. \red{[D: I rephrased to improve, but it is not clear if the sequence of past decisions can be used by the adversary or not (usually oblivious means he doesn't adapt at all)]}
+
+\paragraph{Stochastic regime} The loss is defined by $l_t(X_t,a) := \lan{X_t,\theta_a} + \epsilon_{t,a}$ where $\theta_a$ is a fixed, unknown parameter for each arm $a$, and $\epsilon_{t,a}$ is %an independent and bounded  
+a zero-mean random noise bounded, independent across rounds and arms.
+
+\paragraph{Corrupted stochastic regime} The loss satisfies $l_t(X_t,a) := \lan{X_t,\theta_{t,a}} + \epsilon_{t,a}$, %\red{[If we mean that $\epsilon_t$ is a function of $(X_t,a)$, then we should write it explicitly in the description that follows]} 
+, where $\epsilon_{t,a}$ is again a zero-mean random noise bounded in $[-1,1]$. In this regime, the adversary may corrupt the parameters over time, but only within a limited budget: there exists fixed but unknown vectors $(\theta_a)_{a \in [K]}$ and a constant $C > 0$ such that $\sum_{t=1}^{T} \max_{a \in [K]}||\theta_{t,a}-\theta_a||_2 \leq C$. The extreme cases $C=0$ and $C=T$ recover, respectively, the stochastic regime and the adversarial regime (up to the presence of random noise).
+
+%In addition, in this regime we assume that there exists an unknown constant $C > 0$ and some parameters $(\theta_1,\dots, \theta_K)\in [-1,1]^K$ such that $\sum_{t=1}^{T} \max_{a \in [K]}||\theta_{t,a}-\theta_a||_2 \leq C$, which restricts the power of the adversary in its choice of parameters. 
+%and the vectors $\theta_{t,a}$ are such that there exist fixed and unknown vectors $\theta_1,\ldots,\theta_K$ and  for which $\sum_{t=1}^{T} \max_{a \in [K]}||\theta_{t,a}-\theta_a||_2 \leq C$ holds.
+%Note that the limit cases $C=0$ and $C=T$ corresponds respectively to the stochastic and adversarial regimes.
+
+
+Let $\Pi$ denote the set of deterministic policies $\pi : \rchi \mapsto [K]$. We define the best policy in hindsight $\pi_T^{\star}$ by
+\[\pi_T^{\star}: x \in \rchi \longmapsto \underset{a \in [K]}{\text{arg min}}\;\; \bE\left[\sum_{t=1}^{T}l_t(x,a)\right] \;,\]
+where potential randomness of the loss distribution. The learners' ojective is to minimize the expected cumulative regret against $\pi_T^{\star}$,
+\begin{align}\label{eq::regret_def}
+    R_T =&\,\,\, \bE\left[\sum_{t=1}^{T}(l_t(X_t,A_t) - l_t(X_t,\pi_T^{\star}(X_t)))\right]\\
+    &\, + \bE\left[\sum_{t=1}^T c\cdot |O_t|\right], \nonumber
+\end{align}
+where the expectation here additionally includes the learner’s internal randomization.
+% is taken over the learner's randomness, the sequence of random contexts and the potential randomness of the observed losses.
+
+\DB{If we re-write the proof with ghost sample, explain here}
+
+\paragraph{Additional definitions} In the (corrupted) stochastic regime, we further define
+\[\deltamin(x) := \min_{a \neq \pi_T^{\star}(x)}\lan{x,\theta_a-\theta_{\pi_T^{\star}(x)}} \; \forall x \in \rchi,\]
+and the minimum sub-optimality gap \[\deltamin := \min_{x \in \rchi}\deltamin(x)\;.\]
+If the distribution $\cD$ over contexts is discrete, then $\deltamin$ is always strictly positive if all arms have distinct parameters. However, in the case where $\cD$ is continuous, it is possible that $\deltamin = 0$. In such cases, stochastic regret guarantees depending on $\deltamin^{-1}$ become vacuous. Nonetheless, the adversarial regret bounds remain valid regardless of the value of $\deltamin$.
+
+
+In the analysis, we denote by $\cH_t$ the filtration generated by all past contexts, actions, and observed losses. Finally, we use equivalently the notation $a = O(b)$ or $a \lesssim b$ when there exists a constant $\omega>0$ such that $a \leq \omega b$, where $\omega$ is independent of the following problem-dependent quantities: $T,d,K,\Sigma,\cD,C,\deltamin$.
+
+% \begin{enumerate}
+%     \item $\beta_t := \frac{1}{\eta_t}$ denotes the inverse learning rate at round $t$.
+%     \item We use the notation $a = O(b)$ or $a \lesssim b$ when $a \leq \omega b$ for some constant $\omega>0$ that does not depend on the following problem-dependent quantities: $T,d,K,\Sigma,\cD,C,\deltamin$.
+%     \item $\cH_t$ is the the filtration generated by all the random variables $X_s$ and set of actions $A_s$ for $s\leq t$.
+% \end{enumerate}
+

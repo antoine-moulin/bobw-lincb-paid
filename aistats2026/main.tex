@@ -1,0 +1,114 @@
+\documentclass[twoside]{article}
+
+
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2024
+
+
+% ready for submission
+\usepackage{aistats2026}
+
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+%     \usepackage[final]{neurips_2024}
+
+
+% to avoid loading the natbib package, add option nonatbib:
+%    \usepackage[nonatbib]{neurips_2024}
+
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage[colorlinks=true,
+            linkcolor=blue,
+            citecolor=cyan,
+            urlcolor=magenta]{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+
+\usepackage{amsmath, amssymb}
+\usepackage{amsthm}
+\usepackage{bbm}
+\usepackage{enumitem}
+\usepackage{dsfont}
+
+\usepackage{macros}
+\usepackage{comment}
+
+\usepackage{algorithm} 
+\usepackage{algpseudocode} 
+\usepackage{thm-restate}
+
+\usepackage{natbib}
+
+
+\usepackage[textsize=tiny]{todonotes}
+\newcommand{\dodo}[2][]{\todo[color=blue!20,#1]{{\bf DB:} #2}}
+
+\newcommand{\DB}[1]{\noindent{\textcolor{red}{\textbf{\#DB: }#1\#}}}
+
+
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to break the
+% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
+% authors names on the first line, and the last on the second line, try using
+% \AND instead of \And before the third author name.
+
+
+
+\begin{document}
+
+
+\twocolumn[
+
+\aistatstitle{Best-of-Both Worlds for linear contextual bandits with paid observations}
+
+\aistatsauthor{ Author 1 \And Author 2 \And  Author 3 }]
+
+
+
+\begin{abstract}
+% We study the problem of \emph{linear contextual bandits with paid observations}, which generalizes both multi-armed bandits with observation costs and linear contextual bandits. At each round, the learner selects an action given a context and incurs an additional cost to observe the corresponding feedback.
+% We propose a \textbf{Best-of-Both-Worlds (BOBW)} algorithm that achieves optimal regret guarantees in both adversarial and (corrupted) stochastic regimes. Our method leverages the Follow-the-Regularized-Leader framework with Tsallis entropy regularization, combined with efficient computation of estimators via Matrix Geometric Resampling.
+% We show that our algorithm matches the minimax lower bound of $\Theta(T^{2/3})$ in the adversarial setting and achieves logarithmic regret in the stochastic regime, with smooth degradation under corruption. Our results unify and extend previous Best-of-Both-Worlds (BOBW) approaches for bandits with observation costs and linear bandits, leading to a simple yet optimal algorithm for this novel setting.
+
+We study the problem of linear contextual bandits with paid observations, where at each round the learner selects an action in order to minimize its loss in a given context, and can then decide to pay a fixed cost to observe the loss of any arm. Building on the Follow-the-Regularized-Leader framework with efficient estimators via Matrix Geometric Resampling, we introduce a computationally efficient Best-of-Both-Worlds (BOBW) algorithm for this problem. We show that it achieves the minimax-optimal regret of $\Theta(T^{2/3})$ in adversarial settings, while guaranteeing poly-logarithmic regret in (corrupted) stochastic regimes. Our approach builds on the framework from \cite{BOBWhardproblems} to design BOBW algorithms for ``hard problem'', using analysis techniques tailored for the setting that we consider. %, which may be of independent interest.
+\end{abstract}
+
+
+\input{Sections/Intro}
+
+\input{Sections/Settings}
+
+\input{Sections/Algorithm}
+
+\input{Sections/Regret Analysis}
+
+\input{Sections/Discussion}
+
+
+\bibliographystyle{plainnat}
+\bibliography{biblio}
+\input{Sections/Checklist}
+\newpage 
+
+\appendix
+\onecolumn
+
+\input{Sections/Appendix/todo}
+\input{Sections/Appendix/Appendix}
+\input{Sections/Appendix/Proof or Regret Analysis}
+\input{Sections/Appendix/Useful Lemmas}
+\input{Sections/Appendix/Matrix Geometric Resampling}
+\input{Sections/Appendix/Algorithm Analysis}
+%\input{Sections/Appendix/Mistake}
+
+\end{document}
