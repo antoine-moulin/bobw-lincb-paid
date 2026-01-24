@@ -43,7 +43,7 @@ We now introduce the technical results related to the cost and approximation gua
 \DB{$\ptmin$ can be replaced using forced exploration.}
 
 \begin{proof}
-    \antoine{Expectations should be conditional, and the estimators are incorrect (should be $\ind_{\scbr*{A_t \in O_t}}$ instead)} Let $\norm*{\cdot}_{\mathrm{op}}$ denote the operator norm. Denote by $\wh{\Sigma}_{t, a}^+$ the random matrix output by the MGR procedure in Algorithm~\ref{alg:MGR}. Under independence assumptions of the geometric resampling steps, we have
+    \antoine{Expectations should be conditional, and the estimators are incorrect (should be $\ind_{\scbr*{a \in O_t}}$ instead)} Let $\norm*{\cdot}_{\mathrm{op}}$ denote the operator norm. Denote by $\wh{\Sigma}_{t, a}^+$ the random matrix output by the MGR procedure in Algorithm~\ref{alg:MGR}. Under independence assumptions of the geometric resampling steps, we have
     %
     \begin{equation*}
         \bbE \sbr*{\prod_{j=1}^i \spr*{I - \frac12 B_j}} = \spr*{I - \frac12 \Sigma_{t, a}}^i,
