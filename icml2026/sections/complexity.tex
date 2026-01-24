@@ -1,0 +1,59 @@
+\section{TIME AND SPACE COMPLEXITY OF ALGORITHM~\ref{alg::FTRL_bobw}} \label{AppendixAlgAnalysis}
+
+\db{Propagate the computations below in the main text.}
+
+In this section, we detail the computation of the memory requirement and computation time of Algorithm~\ref{alg::FTRL_bobw}, presented at the end of Section~\ref{sec::algorithm} of the paper.
+
+At each round $t$, the algorithm stores the tuple $\spr*{X_t, A_t, p_t, q_t}$, which is of negligible size $\cO \spr*{d + K}$, together with the parameter estimates $\wt{\theta}_{t, a}$ for all $a \in \sbr*{K}$ and $t \leq T$, which must be kept across rounds to enable information reuse. This requires a total of $\cO \spr*{d K T}$ memory. In addition, at each round $t$, computing the MGR approximation requires storing $\Sigma_t^+ \in \bbR^{d \times d}$, which leads to an additional temporary cost of $\cO \spr*{d^2}$ during the computation of that round. Therefore, with Equation~\eqref{eq::MtO}, the total space complexity is
+%
+\begin{equation*}
+    \cO \spr*{dKT+d^2}.
+\end{equation*}
+
+\paragraph{Per-round computational cost.}
+Each round involves two main computational steps: (i) solving the FTRL update via convex optimization, and (ii) performing Matrix Geometric Resampling (MGR).
+
+\smallskip
+\paragraph{FTRL update.}
+In practice, we solve the FTRL objective up to precision $\varepsilon_t = \cO \spr*{1 / t^2}$ so that the cumulative optimization error remains finite. Because of that, we ignored this term in the regret bound of Theorem~\ref{thm::main}, which assumes that the computation of the sampling distribution is exact.
+
+Using projected gradient descent, the number of iterations required at round $t$ is $\cO \spr*{\log t}$, and each iteration costs $\cO \spr*{d \log d}$. Hence, the total cost over $T$ rounds, that we denote by $\text{Comp}_T^{\mathrm{FTRL}}$, satisfies
+%
+\begin{equation*}
+    \cO \spr*{\sumtT d \log t \log d} = \cO \spr*{T d \log T \log d}.
+\end{equation*}
+
+\smallskip
+\paragraph{Matrix Geometric Resampling.}
+We recall that $M_t$ denotes the number of resampling steps performed at round $t$. Let us assume that $1 / p_t = \cO \spr*{t}$, which essentially corresponds to assuming that the logarithmic regret bound of Theorem~\ref{thm::main} is also a lower bound, which is reasonable from an information-theoretic perspective. Then, since by Eq.~\eqref{eq::Mt} we defined $M_t$ such that
+%
+\begin{equation} \label{eq::MtO}
+    M_t = \cO \spr*{\frac{K t \log t}{\lambda_{\min}}},
+\end{equation}
+%
+we can define the total computational cost of the MGR procedure at round $t$ as
+%
+\begin{equation*}
+    \Gamma_t^{\mathrm{MGR}} \lesssim d^2 M_t \lesssim \frac{K d^2 t \log t}{\lambda_{\min}}.
+\end{equation*}
+%
+Summing over all rounds up to $T$ yields a total computation time $\text{Comp}_T^{\mathrm{MGR}}$ satisfying
+%
+\begin{equation*}
+    \text{Comp}_T^{\mathrm{MGR}} = \sumtT \Gamma_t^{\mathrm{MGR}} \lesssim \frac{K d^2}{\lambda_{\min}} \sumtT t \log t \lesssim \frac{K d^2 T^2 \log T}{\lambda_{\min}}.
+\end{equation*}
+%
+Thus, since the MGR procedure has to be fully rerun at each iteration, its total computational cost scales quadratically in $T$.
+
+\paragraph{Overall complexity.}
+Combining the two components of the algorithm, we obtain a total computational cost of order $\text{Comp}_T^{\text{total}} = \text{Comp}_T^{\mathrm{FTRL}} + \text{Comp}_T^{\mathrm{MGR}}$, satisfying
+%
+\begin{equation*}
+    \text{Comp}_T^{\text{total}} \lesssim T d \log T \log d + \frac{K d^2 T^2 \log T}{\lambda_{\min}}.
+\end{equation*}
+%
+Treating $\lambda_{\min}^{-1}$ as a numerical constant, and remarking that the second term (MGR steps) dominates, we obtain that the overall running time of the algorithm scales as
+%
+\begin{equation*}
+    \text{Comp}_T^{\text{total}} \lesssim K d^2 T^2 \log T.
+\end{equation*}

@@ -1,0 +1,107 @@
+\section{MATRIX GEOMETRIC RESAMPLING}\label{sec::MGR}
+
+Before detailing Algorithm~\ref{alg:MGR}, we elaborate on why using the parameter estimates from Eq.~\eqref{eq::estimator} \antoine{probably meant Equation~\eqref{eq::thetahat}?} would be untractable in practice. To prove this point, we detail the computation of the exact covariance matrix $\Sigma_{t, a}$, which involves evaluating the following conditional expectation
+%
+\begin{align*}
+    \Sigma_{t, a} &= \bbE_t \sbr*{\ind_{\scbr*{a \in O_t}} X_t X_t\transpose}\\
+    &= \sum_{x \in \cX} \bbP \sbr*{X_t = x, a \in O_t \given \cH_{t-1}} x x\transpose\\
+    &= \sum_{x \in \cX} \bbP \sbr*{X_t = x \given \cH_{t-1}} \underbrace{\bbP \sbr*{a \in O_t \given X_t = x, \cH_{t-1}}}_{= p_t \spr*{x}} x x\transpose.
+\end{align*}
+%
+The challenge lies in evaluating the conditional observation probability $p_t \spr*{x}$. Note that in Algorithm~\ref{alg::FTRL_bobw}, $p_t$ was defined unambiguously since it was the observation probability corresponding to the (unique) fixed context $X_t$, computed after it is revealed. Here, $p_t \spr*{x}$ is derived following the same steps, but computed as if context $x$ was observed instead of $X_t$. Doing so requires performing all computations leading to Eq.~\eqref{Rule1} separately for each possible context $x \in \cX$. This results in a computational complexity proportional to the size of the context space, $\abs*{\cX}$, which becomes quickly prohibitive when $\cX$ is large. In addition, we can note that each individual computation requires solving an optimization problem to obtain the FTRL sampling probability (Eq.~\eqref{eq::FTRL}).
+
+To circumvent this limitation, we follow \citet{neu2013efficient, neu2016exploration, BOBWlinear} and use Matrix Geometric Resampling (MGR) to efficiently approximate the \emph{inverse} of the matrix $\Sigma_{t, a}$ directly. It does not need to compute the FTRL sampling allocation over all possible contexts but only on a carefully chosen number of sampled contexts, and only use matrix products (costing $\cO \spr*{d^2}$) but no matrix inversion (costing $\cO \spr*{d^3}$). We recall this procedure in Algorithm~\ref{alg:MGR} below. In the pseudo-code, we denote by $\cB \spr*{p}$ the Bernoulli distribution with parameter $p$.
+
+\begin{algorithm}
+    \caption{Matrix Geometric Resampling (MGR).}
+    \label{alg:MGR}
+    \begin{algorithmic}[1]
+        \STATE {\bfseries Input:} Sampler of the context distribution $\cD$, number of iterations $M_t$.
+        \STATE Initialize $\Sigma_t^+ \gets \frac{1}{2}I,\quad A_0 \gets I$.
+        \FOR{$i = 1$ to $M_t$}
+            \STATE Sample $X \sim \cD$.
+            \STATE Compute probability of observation $p$ as in Step 5 of Algorithm~\ref{alg::FTRL_bobw} if $X_t$ was equal to $X$.
+            \STATE Sample $b \sim \cB \spr*{p}$.
+            \STATE Compute $B_i \gets b X X\transpose$.
+            \STATE Compute $A_i \gets A_{i-1} \spr*{I - \frac12 B_i}$.
+            \STATE Update $\Sigma_t^+ \gets \Sigma_t^+ + \frac12 A_i$.
+        \ENDFOR
+        \STATE {\bfseries Return} $\Sigma_t^+$.
+    \end{algorithmic}
+\end{algorithm}
+
+We now introduce the technical results related to the cost and approximation guarantees of the MGR procedure, which will be used in the regret analysis (see the proof sketch in Section~\ref{sec::regret}).
+%
+\begin{lemma}[Adapted from Lemma~9 of \citealp{BOBWlinear}] \label{lem::MGRbound}
+    Denote $\wh{\theta}_{t, a} = \Sigma_{t, a}^{-1} X_t \, \ell_t \spr*{X_t, a} \, \ind_{\scbr*{a \in O_t}}$ and $\wt{\theta}_{t, a} = \Sigma_{t, a}^+ X_t \, \ell_t \spr*{X_t, a} \, \ind_{\scbr*{a \in O_t}}$, where $\Sigma_{t, a}^+$ is obtained via Algorithm~\ref{alg:MGR} with the number of iterations $M_t$ tuned as in Eq.~\eqref{eq::Mt}. Then, for any arm $a \in \sbr*{K}$ and round $t \geq 1$, it holds that
+    %
+    \begin{equation*}
+        \abs*{\bbE \sbr*{\inp*{X_t, \wt{\theta}_{t, a} - \wh{\theta}_{t, a}} \given \cH_{t-1}}} \leq \exp \spr*{- \frac{\ptmin \lambda_{\min}}{2 K} M_t}.
+    \end{equation*}
+\end{lemma}
+
+\DB{$\ptmin$ can be replaced using forced exploration.}
+
+\begin{proof}
+    \antoine{Expectations should be conditional, and the estimators are incorrect (should be $\ind_{\scbr*{A_t \in O_t}}$ instead)} Let $\norm*{\cdot}_{\mathrm{op}}$ denote the operator norm. Denote by $\wh{\Sigma}_{t, a}^+$ the random matrix output by the MGR procedure in Algorithm~\ref{alg:MGR}. Under independence assumptions of the geometric resampling steps, we have
+    %
+    \begin{equation*}
+        \bbE \sbr*{\prod_{j=1}^i \spr*{I - \frac12 B_j}} = \spr*{I - \frac12 \Sigma_{t, a}}^i,
+    \end{equation*}
+    %
+    and consequently,
+    %
+    \begin{equation*}
+        \bbE \sbr*{\wh{\Sigma}_{t, a}^+} = \frac12 \sum_{i=0}^{M_t} \spr*{I - \frac12 \Sigma_{t, a}}^i = \Sigma_{t, a}^{-1} - \spr*{I - \frac12 \Sigma_{t, a}}^{M_t} \Sigma_{t, a}^{-1}.
+    \end{equation*}
+    %
+    Using this, we compute the expectation of the biased estimator
+    %
+    \begin{align*}
+        \bbE \sbr*{\wt{\theta}_{t, a}} &= \bbE \sbr*{\wh{\Sigma}_{t, a}^+ X_t \, \ell_t \spr*{X_t, a} \, \ind_{\scbr*{A_t = a}}}\\
+        &= \bbE \sbr*{\wh{\Sigma}_{t, a}^+} \cdot \bbE \sbr*{X_t \inp*{X_t, \theta_{t, a}} \, \ind_{\scbr*{A_t = a}}}\\
+        &= \bbE \sbr*{\wh{\Sigma}_{t, a}^+} \cdot \bbE \sbr*{X_t X_t\transpose \, \ind_{\scbr*{A_t = a}}} \cdot \theta_{t, a}\\
+        &= \spr*{ \Sigma_{t, a}^{-1} - \spr*{I - \frac12 \Sigma_{t, a}}^{M_t} \Sigma_{t, a}^{-1} } \cdot \Sigma_{t, a} \cdot \theta_{t, a}\\
+        &= \theta_{t, a} - \spr*{I - \frac12 \Sigma_{t, a}}^{M_t} \theta_{t, a}.
+    \end{align*}
+    %
+    Hence, the bias is given by
+    %
+    \begin{equation*}
+        \bbE \sbr*{\wt{\theta}_{t, a} - \wh{\theta}_{t, a}} = - \spr*{I - \frac12 \Sigma_{t, a}}^{M_t} \theta_{t, a}.
+    \end{equation*}
+    %
+    We then bound the inner product as
+    %
+    \begin{align*}
+        \abs*{\bbE \sbr*{\inp*{X_t, \wt{\theta}_{t, a} - \wh{\theta}_{t, a}} \given \cH_{t-1}}} &\leq \norm*{X_t}_2 \, \norm*{\theta_{t, a}}_2 \, \norm*{\spr*{I - \frac12 \Sigma_{t, a}}^{M_t}}_{\mathrm{op}}\\
+        &\leq \XMAX \THETAMAX \spr*{1 - \frac{\ptmin \lambda_{\min}}{2 K}}^{M_t}\\
+        &\leq \exp \spr*{- \frac{\ptmin \lambda_{\min}}{2 K} M_t},
+    \end{align*}
+    %
+    where we used $\norm*{X_t}_2 \leq \XMAX$, $\norm*{\theta_{t, a}}_2 \leq \THETAMAX$, and the bound $\Sigma_{t, a} \succeq \frac{\ptmin \lambda_{\min}}{K} I$ in the third inequality (since each arm is observed with probability $p_t$). \DB{Why do we have a $K^{-1}$ factor here?} \antoine{should not be here}
+\end{proof}
+
+\begin{lemma} \label{lem::boundBias}
+    The cumulative bias introduced by the MGR approximation is uniformly bounded as
+    %
+    \begin{equation*}
+        \sumtT \max_{a \in \sbr*{K}} \abs*{\bbE \sbr*{\inp*{X_t, \wt{\theta}_{t, a} - \wh{\theta}_{t, a}}}} \le \frac{\pi^2}{6}.
+    \end{equation*}
+\end{lemma}
+
+\begin{proof}
+    From Lemma~\ref{lem::MGRbound} and the definition $M_t = \left\lceil \tfrac{4 K}{\ptmin \lambda_{\min}} \log t \right\rceil$, we obtain, conditionally on $\cH_{t-1}$,
+    %
+    \begin{equation*}
+        \abs*{\bbE \sbr*{\inp*{X_t, \wt{\theta}_{t, a} - \wh{\theta}_{t, a}} \given \cH_{t-1}}} \le \exp \spr*{- \tfrac{\ptmin \lambda_{\min}}{2 K} M_t} \le \frac{1}{t^2}.
+    \end{equation*}
+    %
+    Taking total expectation and maximizing over $a \in \sbr*{K}$ yields
+    %
+    \begin{equation*}
+        \max_{a \in \sbr*{K}} \abs*{\bbE \sbr*{\inp*{X_t, \wt{\theta}_{t, a} - \wh{\theta}_{t, a}}}} \le \frac{1}{t^2}.
+    \end{equation*}
+    %
+    We finally obtain the result by summing over $t$.
+\end{proof}
