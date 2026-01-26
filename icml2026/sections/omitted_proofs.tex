@@ -1,5 +1,48 @@
 \section{Temp Antoine: Regret analysis}
 
+    \subsection{Notation}
+
+\antoine{Writing new notation here, propagate back into the main text later} For $\alpha \in \spr*{0, 1}$, we define the negative Tsallis entropy with parameter $\alpha$ over the nonnegative orthant $\bbRnnK$ as
+%
+\begin{equation*}
+    H_\alpha \spr*{q} = \frac{1}{1 - \alpha} \sumaK \spr*{q_a - q_a^\alpha}.
+\end{equation*}
+%
+Note that $\nabla H_\alpha \spr*{q} = \frac{1}{1 - \alpha} \spr*{\bfone - \alpha q^{\alpha - 1}}$, and $\nabla^2 H_\alpha \spr*{x} = \alpha \Diag \spr*{q^{\alpha - 2}}$. At time $t$, for any context $x$ and arm $a$, the losses are defined as $\ell_t \spr*{x, a} = \inp*{x, \theta_{t, a}}$. We denote $p_t \spr*{x}$ the probability of observing each arm at time $t$ for context $x$, \ie, $p_t \spr*{x} = \bbP_t \sbr*{a \in O_t \given X_t = x}$, and we let $\Sigma_t = \bbE_t \sbr*{p_t \spr*{X_t} X_t X_t\transpose}$ the (conditional) covariance matrix of the contexts for the observed actions. We denote $\ptmin = \min_{x \in \cX} p_t \spr*{x}$. We consider the corresponding importance-weighted estimator $\wh{\theta}_{t, a} = \Sigma_t^{-1} X_t \ell_t \spr*{X_t, a} \, \ind_{\scbr*{a \in O_t}}$ and note that this is an unbiased estimator
+%
+\begin{align*}
+    \bbE_t \sbr*{\wh{\theta}_{t, a}} &= \Sigma_t^{-1} \bbE_t \sbr*{X_t X_t\transpose \theta_{t, a} \ind_{\scbr*{a \in O_t}}}\\
+    &= \Sigma_t^{-1} \bbE_t \sbr*{X_t X_t\transpose \theta_{t, a} \bbE_t \sbr*{\ind_{\scbr*{a \in O_t}} \given X_t}}\\
+    &= \Sigma_t^{-1} \bbE_t \sbr*{p_t \spr*{X_t} X_t X_t\transpose} \theta_{t, a}\\
+    &= \theta_{t, a},
+\end{align*}
+%
+where we used the definition of the losses $\ell_t$, the law of total expectation, and the definitions of $p_t$ and $\Sigma_t$. We further denote $\wt{\theta}_{t, a}$ the MGR approximation of $\wh{\theta}_{t, a}$, defined as
+%
+\begin{equation*}
+    \wt{\theta}_{t, a} = \whsigmaplust X_t \ell_t \spr*{X_t, a} \, \ind_{\scbr*{a \in O_t}},
+\end{equation*}
+%
+where $\whsigmaplust$ is the random matrix output by the MGR procedure in Algorithm~\ref{alg:MGR}. This is a biased estimator, and assuming the procedure sampled $M_t$ additional contexts, we have \antoine{check the last equation carefully}
+%
+\begin{align*}
+    \bbE_t \sbr*{\wt{\theta}_{t, a}} &= \bbE_t \sbr*{\whsigmaplust} \bbE_t \sbr*{X_t \ell_t \spr*{X_t, a} \, \ind_{\scbr*{a \in O_t}}}\\
+    &= \bbE_t \sbr*{\whsigmaplust} \Sigma_t \cdot \theta_{t, a}\\
+    &= \theta_{t, a} - \spr*{I - \frac12 \Sigma_t}^{M_t} \theta_{t, a}.
+\end{align*}
+%
+We denote $\wh{\ell}_t$ and $\wt{\ell}_t$ the corresponding losses. For any $x$, any $t$, we consider the policies $q_t$ defined as
+%
+\begin{equation*}
+    q_t \spr*{\cdot \given x} = \argmin_{q \in \Delta_K} \scbr*{\sum_{s=1}^{t-1} \inp*{q, \wt \ell_s \spr*{x}} + \psi_t \spr*{q} + \bar\psi \spr*{q}},
+\end{equation*}
+%
+where we defined $\psi_t \spr*{q} = \frac{1}{\eta_t} H_\alpha \spr*{q}$ for some $\eta_t > 0$ to be defined, $\bar\psi \spr*{q} = \bar\beta H_{\bar\alpha} \spr*{q}$ with $\bar\alpha = 1 - \alpha$ and some $\bar\beta > 0$ to be defined, and $\wt \ell_s \spr*{x} \in \bbR^K$ is the vector of estimated losses at time $s$ for context $x$, with components $\wt \ell_s \spr*{x, a} = \inp*{x, \wt \theta_{s, a}}$ for any $a \in \sbr*{K}$.
+
+
+
+    \subsection{Analysis}
+
 Recall the definition of the regret
 %
 \begin{align*}
@@ -7,15 +50,15 @@ Recall the definition of the regret
     &= \bbE \sbr*{\sumtT \sumaK \spr*{q_t \spr*{a \given X_t} - \pi_T^\star \spr*{a \given X_t}} \inp*{X_t, \theta_{t, a}}} + c K\,\bbE \sbr*{\sumtT p_t \spr*{X_t}},
 \end{align*}
 %
-where we used the fact that $\bbE \sbr*{\ell_t \spr*{X_t, a} \given \cH_{t - 1}} = \inp*{X_t, \theta_{t, a}}$ for any $a \in \sbr*{K}$ for the first term, and that $\bbE \sbr*{\abs*{O_t} \given \cH_{t - 1}, X_t} = K p_t \spr*{X_t}$ for the second term, which holds because at time $t$, each arm $a$ is observed with probability $p_t \spr*{X_t}$.
+where we used the fact that $\bbE_t \sbr*{\ell_t \spr*{X_t, a}} = \inp*{X_t, \theta_{t, a}}$ for any $a \in \sbr*{K}$ for the first term, and that $\bbE_t \sbr*{\abs*{O_t} \given X_t} = K p_t \spr*{X_t}$ for the second term, which holds because at time $t$, each arm $a$ is observed with probability $p_t \spr*{X_t}$.
 
 We introduce a ghost sample $X_0 \sim \cD$ independent from $\cH_T$. Conditional on $\cH_{t-1}$, both $X_t$ and $X_0$ are \iid from $\cD$, and $p_t$ is $\cH_{t-1}$-measurable, hence, we have
 %
 \begin{equation*}
-    \bbE \sbr*{p_t \spr*{X_t} \given \cH_{t - 1}} = \bbE \sbr*{p_t \spr*{X_0} \given \cH_{t - 1}}.
+    \bbE_t \sbr*{p_t \spr*{X_t}} = \bbE_t \sbr*{p_t \spr*{X_0}}.
 \end{equation*}
 %
-Recall the definition of the importance-weighted estimator $\wh{\theta}_{t, a} = \Sigma_{t, a}^{-1} X_t \ell_t \spr*{X_t, a} \mathds{1}_{\scbr*{a \in O_t}}$ and note that $\bbE \sbr*{\wh{\theta}_{t, a} \given \cH_{t-1}} = \theta_{t, a}$. By Lemma~\ref{lem:ghost-sample-neu}, we can further rewrite the regret as
+By Lemma~\ref{lem:ghost-sample-neu} and the fact that $\wh{\theta}_{t, a}$ is an unbiased estimator of $\theta_{t, a}$, \ie $\bbE_t \sbr{\wh{\theta}_{t, a}} = \theta_{t, a}$, we can further rewrite the regret as \antoine{there is a bug with the upper bound on the bias term at the end}
 %
 \begin{align*}
     R_T &= \bbE \sbr*{\sumtT \sumaK \spr*{q_t \spr*{a \given X_0} - \pi_T^\star \spr*{a \given X_0}} \inp*{X_0, \wh{\theta}_{t, a}}} + c K\,\bbE \sbr*{\sumtT p_t \spr*{X_0}}\\
@@ -25,7 +68,7 @@ Recall the definition of the importance-weighted estimator $\wh{\theta}_{t, a} =
     &\quad+ 2 \sumtT \max_{a \in \sbr*{K}} \abs*{\bbE \sbr*{\inp*{X_0, \wh{\theta}_{t, a} - \wt{\theta}_{t, a}}}}.
 \end{align*}
 %
-where $\wt{\theta}_{t, a}$ are is MGR estimate defined as $\wt{\theta}_{t, a} = \Sigma_t^+ X_t \ell_t \spr*{X_t, a} \mathds{1}_{\scbr*{a \in O_t}}$ (see Eq.~\ref{eq::MGR_estimate}). For any context $x \in \cX$, we define the auxiliary regret
+For any context $x \in \cX$, we define the auxiliary regret
 %
 \begin{equation*}
     \wt R_T \spr*{x} \coloneqq \sumtT \sumaK \spr*{q_t \spr*{a \given x} - \pi_T^\star \spr*{a \given x}} \inp*{x, \wt{\theta}_{t, a}} + c K \sumtT p_t \spr*{x}
@@ -55,14 +98,44 @@ Thus, it remains to upper bound $\bbE_{X_0 \sim \cD} \sbr*{\wt R_T \spr*{X_0}}$.
     q_t \spr*{\cdot \given x} = \argmin_{q \in \Delta_K} \scbr*{\sum_{s=1}^{t-1} \sumaK q \spr*{a} \inp*{x, \wt{\theta}_{s, a}} + \cR_t \spr*{q}},
 \end{equation*}
 %
-where we denoted $\cR_t \spr*{q} = \frac{1}{\eta_t} \spr*{- H_\alpha \spr*{q}} + \bar\beta \spr*{- H_{\bar\alpha} \spr*{q}}$. By the standard FTRL analysis \citep[Exercise~28.12]{BanditBook}, we have
+where we denoted $\cR_t \spr*{q} = \frac{1}{\eta_t} H_\alpha \spr*{q} + \bar\beta H_{\bar\alpha} \spr*{q}$. By the standard FTRL analysis \citep[Exercise~28.12]{BanditBook} \antoine{copy/prove the lemma in Technical tools appendix and refer to it}, we have
 %
 \begin{align*}
-    \wt R_T \spr*{x} &\leq \sumtT \spr*{\sumaK \spr*{q_t \spr*{a \given x} - q_{t+1} \spr*{a \given x}} \inp*{x, \wt \theta_{t, a}} - D_{\cR_t} \spr*{q_{t+1} \spr*{\cdot \given x}, q_t \spr*{\cdot \given x}}}\\
-    &\quad+ \cR_{T+1} \spr*{\pi_T^\star \spr*{\cdot \given x}} - \cR_1 \spr*{q_1 \spr*{\cdot \given x}} + \sumtT \spr*{\frac{1}{\eta_{t+1}} - \frac{1}{\eta_t}} H_{\alpha} \spr*{q_{t+1} \spr*{\cdot \given x}}\\
-    &\quad+ c K \sumtT p_t \spr*{x}.
+    \wt R_T \spr*{x} &\leq \sumtT \underbrace{\spr*{\sumaK \spr*{q_t \spr*{a \given x} - q_{t+1} \spr*{a \given x}} \inp{x, \wt \theta_{t, a}} - D_{\cR_t} \spr*{q_{t+1} \spr*{\cdot \given x}, q_t \spr*{\cdot \given x}}}}_{= \stabt}\\
+    &\quad+ \underbrace{\cR_{T+1} \spr*{\pi_T^\star \spr*{\cdot \given x}} - \cR_1 \spr*{q_1 \spr*{\cdot \given x}} + \sumtT \spr*{\frac{1}{\eta_{t+1}} - \frac{1}{\eta_t}} H_{\alpha} \spr*{q_{t+1} \spr*{\cdot \given x}}}_{= \pen}\\
+    &\quad+ c K \sumtT p_t \spr*{x},
 \end{align*}
 %
+where the Bregman divergence of the composite regularizer is given by
+%
+\begin{equation*}
+    D_{\cR_t} \spr*{q, q'} = \cR_t \spr*{q} - \cR_t \spr*{q'} - \inp*{\nabla \cR_t \spr*{q'}, q - q'} = \frac{1}{\eta_t} D_{H_\alpha} \spr*{q, q'} + \bar\beta D_{H_{\bar\alpha}} \spr*{q, q'},
+\end{equation*}
+%
+and the Bregman divergence associated to $H_\alpha$ is
+%
+\begin{align*}
+    D_{H_\alpha} \spr*{q, q'} &= H_\alpha \spr*{q} - H_\alpha \spr*{q'} - \inp*{\nabla H_\alpha \spr*{q'}, q - q'}\\
+    &= \frac{1}{1 - \alpha} \sumaK \spr*{q_a - q_a' - q_a^\alpha + \spr*{q_a'}^\alpha + \spr*{\alpha \spr*{q_a'}^{\alpha - 1} - 1} \spr*{q_a - q_a'}}\\
+    &= \frac{1}{1 - \alpha} \sumaK \spr*{\spr*{q_a'}^\alpha - q_a^\alpha + \alpha \spr*{q_a'}^{\alpha - 1} \spr*{q_a - q_a'}}.
+\end{align*}
+
+\paragraph{Controlling the stability term.} Denote $\stab = \sumtT \stabt$. Noting that $D_{H_{\bar\alpha}}$ is non-negative, we have
+%
+\begin{align*}
+    \stabt &\leq \sumaK \spr*{q_t \spr*{a \given x} - q_{t+1} \spr*{a \given x}} \inp{x, \wt \theta_{t, a}} - \frac{1}{\eta_t} D_{H_\alpha} \spr*{q_{t+1} \spr*{\cdot \given x}, q_t \spr*{\cdot \given x}}\\
+    &= \frac{1}{\eta_t} \spr*{\sumaK \spr*{q_t \spr*{a \given x} - q_{t+1} \spr*{a \given x}} \eta_t \inp{x, \wt \theta_{t, a}} - D_{H_\alpha} \spr*{q_{t+1} \spr*{\cdot \given x}, q_t \spr*{\cdot \given x}}}.
+\end{align*}
+%
+We need to control the magnitude of $\eta_t \inp{x, \wt \theta_{t, a}}$. Using the definition of $\wt \theta_{t, a}$ and the fact that $\norm{x}_2 \leq 1$, we have \antoine{seems to be the first constraint on the choice of $\eta_t$, we need to set it so we can use Lemma~\ref{lem::ub_ftrl_technical}}
+%
+\begin{align*}
+    \abs{\eta_t \inp{x, \wt \theta_{t, a}}} &\leq
+\end{align*}
+
+
+
+\paragraph{Controlling the penalty term.} \antoine{If I understand correctly the second regularizer becomes useful to enable the use of Lemma~\ref{lem::ftrl_smooth_bound}}
 
 
 
@@ -332,19 +405,19 @@ Applying Lemma~\ref{lem::standard_regret_decompo}, we obtain:
 \le
 &\quad\underbrace{
 \sumtT \big( \psi_t(q_{t+1}(.|x)) - \psi_{t+1}(q_{t+1}(.|x)) \big)
-}_{\text{stability}} \\[0.3em]
+}_{\text{penalty}} \\[0.3em]
 &+ 
 \underbrace{
 \sumtT \big( 
 \langle q_t(.|x) - q_{t+1}(.|x), \wh{\ell}_t \spr*{x} \rangle 
 - D_t(q_{t+1}(.|x), q_t(.|x))
 \big)
-}_{\text{penalty}} 
+}_{\text{stability}} 
 + A + \bar{\beta}\bar{h},
 \end{align*}
 where $A = \psi_{T+1}(\pi^\star(\cdot|x)) - \psi_1(q_1(\cdot|x)) \le \beta_1 \log K$ is independent of $T$ and will be ignored in the sequel (together with $\bar{\beta}\bar{h}$).
 
-\paragraph{Bounding the stability term.}
+\paragraph{Bounding the penalty term.}
 By the definition of $\psi_t$, we have
     \begin{equation*}
 \sumtT 
@@ -360,7 +433,7 @@ Reindexing $t \mapsto t-1$ yields the equivalent form
 \Big( \frac{1}{\eta_t} - \frac{1}{\eta_{t-1}} \Big) h_t.
     \end{equation*}
 
-\paragraph{Bounding the penalty term.}
+\paragraph{Bounding the stability term.}
 Using Lemma~\ref{lem::ub_ftrl_technical} together with Lemma~\ref{lem::bound_squared_loss}, we have
 \begin{align}
 \sumtT 
