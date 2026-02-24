@@ -8,6 +8,7 @@
     H_\alpha \spr*{q} = \frac{1}{1 - \alpha} \sumaK \spr*{q_a - q_a^\alpha}.
 \end{equation*}
 %
+\db{Mettre $1/\alpha$}
 Note that $\nabla H_\alpha \spr*{q} = \frac{1}{1 - \alpha} \spr*{\bfone - \alpha q^{\alpha - 1}}$, and $\nabla^2 H_\alpha \spr*{x} = \alpha \Diag \spr*{q^{\alpha - 2}}$. At time $t$, for any context $x$ and arm $a$, the losses are defined as $\ell_t \spr*{x, a} = \inp*{x, \theta_{t, a}}$. We denote $p_t \spr*{x}$ the probability of observing each arm at time $t$ for context $x$, \ie, $p_t \spr*{x} = \bbP_t \sbr*{a \in O_t \given X_t = x}$, and we let $\Sigma_t = \bbE_t \sbr*{p_t \spr*{X_t} X_t X_t\transpose}$ the (conditional) covariance matrix of the contexts for the observed actions. We denote $\ptmin = \min_{x \in \cX} p_t \spr*{x}$. We consider the corresponding importance-weighted estimator $\wh{\theta}_{t, a} = \Sigma_t^{-1} X_t \ell_t \spr*{X_t, a} \, \ind_{\scbr*{a \in O_t}}$ and note that this is an unbiased estimator
 %
 \begin{align*}
@@ -116,9 +117,10 @@ and the Bregman divergence associated to $H_\alpha$ is
 %
 \begin{align*}
     D_{H_\alpha} \spr*{q, q'} &= H_\alpha \spr*{q} - H_\alpha \spr*{q'} - \inp*{\nabla H_\alpha \spr*{q'}, q - q'}\\
-    &= \frac{1}{1 - \alpha} \sumaK \spr*{q_a - q_a' - q_a^\alpha + \spr*{q_a'}^\alpha + \spr*{\alpha \spr*{q_a'}^{\alpha - 1} - 1} \spr*{q_a - q_a'}}\\
-    &= \frac{1}{1 - \alpha} \sumaK \spr*{\spr*{q_a'}^\alpha - q_a^\alpha + \alpha \spr*{q_a'}^{\alpha - 1} \spr*{q_a - q_a'}}.
+    &= \frac{1}{\alpha} \sumaK \spr*{q_a - q_a' - q_a^\alpha + \spr*{q_a'}^\alpha + \spr*{\alpha \spr*{q_a'}^{\alpha - 1} - 1} \spr*{q_a - q_a'}}\\
+    &= \frac{1}{\alpha} \sumaK \spr*{\spr*{q_a'}^\alpha - q_a^\alpha + \alpha \spr*{q_a'}^{\alpha - 1} \spr*{q_a - q_a'}}.
 \end{align*}
+\db{use the right entropy}
 
 \paragraph{Controlling the stability term.} Denote $\stab = \sumtT \stabt$. Noting that $D_{H_{\bar\alpha}}$ is non-negative, we have
 %
@@ -128,14 +130,30 @@ and the Bregman divergence associated to $H_\alpha$ is
 \end{align*}
 %
 We need to control the magnitude of $\eta_t \inp{x, \wt \theta_{t, a}}$. Using the definition of $\wt \theta_{t, a}$ and the fact that $\norm{x}_2 \leq 1$, we have \antoine{seems to be the first constraint on the choice of $\eta_t$, we need to set it so we can use Lemma~\ref{lem::ub_ftrl_technical}}
+\db{Not on the choice of $\eta_t$ but on the choice of $u_t$. }
+To be able to use Lemma~\ref{lem::ub_ftrl_technical}, we need to choose $u_t$ in order to verify that 
 %
 \begin{align*}
-    \abs{\eta_t \inp{x, \wt \theta_{t, a}}} &\leq
+    \abs{\eta_t \inp{x, \wt \theta_{t, a}}} &\leq \frac{1 - \alpha}{4} \cdot \frac{1}{q_{t\star}(x)^{1 - \alpha}}
 \end{align*}
+For the moment, forget about MGR and assume that the estimate is of the form $\wt \theta_{t,a} = \Sigma_{t,a}^{-1}X_t\ell_t(X_t, a)\ind(a\in O_t)$, where $\Sigma_{t,a}$ is any matrix that makes the estimator unbiased/with controlled bias. Then, following e.g the proof of Lemma 2 of \cite{BOBWlinear} we can write that 
+\begin{align*}
+	\abs{\inp{x, \wt \theta_{t,a}}} &\leq \norm{\Sigma_{t,a}^{-1}}_{\text{op}} \\
+	& \leq  \frac{1}{\lambda_{\min}(\Sigma_{t,a})} \;, \\
+\end{align*}
+using that all contexts are in the unit Euclidean ball. Some examples are $\Sigma_{t,a}^{-1}=\frac{\Sigma^{-1}}{p_t(X_t)}$, in which case the above bounds yields $\frac{1}{p_t(X_t)\lambda_{\min}(\Sigma)}$; or $\Sigma_{t,a}=\E_{t, X\sim \cD}\left[p_t(X) XX^T\right]$, which satisfies $\Sigma_{t,a}\succ \lambda(\Sigma) \min_{x\in \cX} p_t(x) I$.  For the MGR estimate of the later, it is known (\cite{BOBWlinear}[Lemma 2]) that the bound becomes $\frac{\eta_t (M_t+1)}{2}$, which encourages to tune $M_t$ at most of order $\frac{1}{\eta_t}$. This can in turn impose constraints on the tuning of $\eta_t$ (in that case the tuning of $u_t$ will appear in the control of the bias).  
+
+Apart from the MGR estimate, it seems that the above bounds impose a strong constraint on $p_t$, and so on $u_t$. Indeed, as in \cite{BOBWhardproblems} we use $u_t$ to meet the condition above by choosing it to be $u_t(x)=\eta_t v_t(x)$ for some function $v$. Unfortunately, without proving more properties on $p_t$ it seems that $u_t$ must be uniformly bounded (in both case). In particular, it seems that one must impose 
+\[\forall x \in \cX, \; u_t(x) = \frac{4\eta_t}{1-\alpha} \cdot \max_{x\in \cX} q_{t\star}(x)^{1-\alpha} \;. \]
+
+\db{This is a bit hard to sell from a computational perspective. Can we find less ugly? If we replace by $1/2$ what do we lose? Do we still get BOBW but get uglier logs?}
+
+\db{An alternative path, but maybe super hard would be to upper bound the ratio $\sup_{x,y} \frac{p_t(x)}{p_t(y)}$.}
 
 \paragraph{Controlling the penalty term.} \antoine{If I understand correctly the second regularizer becomes useful to enable the use of Lemma~\ref{lem::ftrl_smooth_bound}}
+\db{The second regularizer controls the ratio of entropies in-between rounds, that is condition (iii) in Thm. 7 of \cite{BOBWhardproblems}.}
 
-
+\db{Since the learning rate update is defined for SPB matching the only thing to do here is to control this entropy. Seems all arguments from \cite{BOBWhardproblems} should readily apply here with the ghost sample trick.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

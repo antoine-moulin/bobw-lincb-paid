@@ -23,6 +23,7 @@ To enable algorithm design and analysis, we adopt standard assumptions from the 
     \item For any $t \in \sbr*{T}$, $a \in \sbr*{K}$, $\textcolor{red}{\norm*{\theta_{t, a}}_2 \leq \THETAMAX}$.
     
     \item For any $t \in \sbr*{T}$, $x \in \cX$, $a \in \sbr*{K}$, $\ell_t \spr*{x, a} \in \sbr*{-1, 1}$. \antoine{inconsistent with the noise model}
+    \db{I guess it's fine to have heteroscedastic noise here, should be fine to keep this.}
 \end{enumerate}
 %
 We denote by $\Sigma = \bbE_{X \sim \cD} \sbr*{X X\transpose} \succ 0$ the covariance matrix of the context distribution, and by $\lambda_{\min} > 0$ its minimum non zero eigenvalue, assumed to be known to the learner. While the learner does not know $\cD$ in full, we assume access to independent samples from $\cD$ between rounds, for instance through a simulator.

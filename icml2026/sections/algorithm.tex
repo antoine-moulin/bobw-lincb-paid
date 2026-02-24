@@ -28,10 +28,9 @@ Note that $x \mapsto q_t \spr*{\cdot \given x}$ is $\cH_{t-1}$-measurable. This 
     \item \textbf{Regularizer.} We use the Tsallis entropy, with
     %
     \begin{equation*}
-        \psi_t \spr*{q} \coloneqq - \frac{H_\alpha \spr*{q}}{\eta_t}, \text{ for } H_{\alpha} \spr*{q} \coloneqq \textcolor{red}{\frac{1}{\alpha - 1}} \sum_{a=1}^{K} \spr*{q_a^\alpha - q_a},
+        \psi_t \spr*{q} \coloneqq - \frac{H_\alpha \spr*{q}}{\eta_t}, \text{ for } H_{\alpha} \spr*{q} \coloneqq \textcolor{red}{\frac{1}{\alpha}} \sum_{a=1}^{K} \spr*{q_a^\alpha - q_a},
     \end{equation*}
     %
-    \db{Should be $\frac{1}{\alpha - 1}$, I see the error is propagated from \cite{BOBWhardproblems} (below Eq. (10)), but I guess in their derivations they then use the right one.}
     where $\eta_t > 0$ is the learning rate at time $t$, and we fix $\alpha \coloneqq 1 - \spr*{\log K}^{-1}$. For convenience, we also define $\beta_t \coloneqq 1/\eta_t$.
 
     \item \textbf{Additional parameters.} We set $\bar{\alpha} \coloneqq 1 - \alpha$ and
@@ -91,6 +90,8 @@ Compared to Algorithm~2 in \citet{BOBWhardproblems}, we have modified the defini
 \end{equation}
 %
 This tuning seems to differ from the one proposed in Eq.~93 of \citet{BOBWhardproblems} for their BoBW algorithm in the MAB with paid observations setting. As we explain in Section~\ref{sec::regret}, our choice avoids a factor $\spr{\tfrac{1}{cK} + cK}$ in the regret bound, which would otherwise render the guarantee vacuous when $c$ is very small. Moreover, Eq.~\eqref{eq::def_zt_ut} shows that without this inverse scaling in $c$, the observation probability would converge to zero for small $c$ under a fixed sampling probability, which is an unintuitive and undesirable behavior.
+
+\db{Remove this discussion at some point}
 
 The fact that the probability $p_t$ is uniform across arms has two important consequences for the MGR scheme. First, it removes the need for the forced exploration mechanism used in \citet{BOBWlinear} to control the bias (see their Lemma~9), and instead leads to a different result, formalized in our Lemma~\ref{lem::MGRbound}. Second, since $\Sigma_{t, a}$ is identical for all arms, we only need to compute a single pseudo-inverse $\Sigma_t^+$ per round. As a result, MGR only needs to be executed once at each time step, significantly reducing the overall computational cost.
 
