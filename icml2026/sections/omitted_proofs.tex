@@ -137,22 +137,23 @@ To be able to use Lemma~\ref{lem::ub_ftrl_technical}, we need to choose $u_t$ in
 \begin{equation}\label{eq::as_bound}
     \abs{\eta_t \inp{x, \wt \theta_{t, a}}} \leq \frac{1 - \alpha}{4} \cdot \frac{1}{q_{t\star}(x)^{1 - \alpha}}
 \end{equation}
-For the moment, forget about MGR and assume that the estimate is of the form $\wt \theta_{t,a} = \Sigma_{t,a}^{-1}X_t\ell_t(X_t, a)\ind(a\in O_t)$, where $\Sigma_{t,a}$ is any matrix that makes the estimator unbiased/with controlled bias. Then, following e.g the proof of Lemma 2 of \cite{BOBWlinear} we can write that 
+For the moment, forget about MGR and assume that the estimate is of the form $\wt \theta_{t,a} = \Sigma_t^{-1}X_t\ell_t(X_t, a)\ind(a\in O_t)$, where $\Sigma_t$ is any matrix that makes the estimator unbiased/with controlled bias. Then, following e.g the proof of Lemma 2 of \cite{BOBWlinear} we can write that 
 \begin{align*}
-	\abs{\inp{x, \wt \theta_{t,a}}} &\leq \norm{\Sigma_{t,a}^{-1}}_{\text{op}} \\
-	& \leq  \frac{1}{\lambda_{\min}(\Sigma_{t,a})} \;, \\
+	\abs{\inp{x, \wt \theta_{t,a}}} &\leq \norm{\Sigma_t^{-1}}_{\text{op}} \\
+	& \leq  \frac{1}{\lambda_{\min}(\Sigma_t)} \;, \\
 \end{align*}
 using that all contexts are in the unit Euclidean ball. Some examples are
 \begin{itemize}
-	\item[(i)]  $\Sigma_{t,a}=p_t(X_t) \Sigma^{-1}$, which yields $\lambda_{\min}(\Sigma_{t,a}) = p_t(X_t)\cdot \lambda_{\min}(\Sigma)$.
-	\item[(ii)] $\Sigma_{t,a}=\E_{t, X\sim \cD}\left[p_t(X) XX^T\right]$, which gives $\Sigma_{t,a}\succeq \lambda_{\min}(\Sigma)\; \underset{x\in \cX}{ \min } \;p_t(x)\cdot  I$ so $\lambda_{\min}(\Sigma_{t,a}) \geq \underset{x\in \cX}{ \min }\; p_t(x)  \cdot \lambda_{\min}(\Sigma)$.
-	\item[(iii)] MGR estimate of (ii), for which it is known (\cite{BOBWlinear}[Lemma 2]) that $\norm{\Sigma_{t,a}^+}_{\text{op}} \leq \frac{(M_t+1)}{2}$.
+	\item[(i)]  $\Sigma_t=p_t(X_t) \Sigma$, which yields $\lambda_{\min}(\Sigma_t) = p_t(X_t)\cdot \lambda_{\min}(\Sigma)$.
+	\item[(ii)] $\Sigma_t=\E_{t, X\sim \cD}\left[p_t(X) XX^T\right]$, which gives $\Sigma_t\succeq \lambda_{\min}(\Sigma)\; \underset{x\in \cX}{ \min } \;p_t(x)\cdot  I$ so $\lambda_{\min}(\Sigma_t) \geq \underset{x\in \cX}{ \min }\; p_t(x)  \cdot \lambda_{\min}(\Sigma)$.
+	\item[(iii)] MGR estimate of (ii), for which it is known (\cite{BOBWlinear}[Lemma 2]) that $\norm{\Sigma_t^+}_{\text{op}} \leq \frac{(M_t+1)}{2}$.
 \end{itemize}
 
 The bound for the MGR estimates encourages to tune $M_t$ at most of order $\frac{1}{\eta_t}$, which is what is done in \cite{BOBWlinear}. This can in turn impose constraints on the tuning of $\eta_t$ (in that case the tuning of $u_t$ will appear in the control of the bias), which gives the extra logs in \cite{BOBWlinear}.  
 
 Apart from the MGR estimate, it seems that the above bounds impose a strong constraint on $p_t$, and so on $u_t$. Indeed, as in \cite{BOBWhardproblems} we use $u_t$ to meet the condition above by choosing it to be $u_t(x)=\eta_t v_t(x)$ for some function $v$. Unfortunately, without proving more properties on $p_t$ it seems that $u_t$ must be uniformly bounded (in both case). In particular, it seems that one must impose 
-\[\forall x \in \cX, \; u_t(x) = \frac{4\eta_t}{1-\alpha} \cdot \max_{x\in \cX} q_{t\star}(x)^{1-\alpha} \;. \]
+\begin{equation}\label{eq::cond_ut}\forall x \in \cX, \; u_t(x) = \frac{4\eta_t}{1-\alpha} \cdot \max_{x\in \cX} q_{t\star}(x)^{1-\alpha} \;. 
+\end{equation}
 
 \db{This is a bit hard to sell from a computational perspective. Can we find less ugly? If we replace the prob by $1/2$ what do we lose? Do we still get BOBW but get uglier logs? Note that if the context space is somewhat continuous nothing prevent several arms to be optimal/close to optimal, so this would be constant anyway\dots}
 
@@ -163,9 +164,34 @@ Apart from the MGR estimate, it seems that the above bounds impose a strong cons
 
 If we can guarantee that \eqref{eq::as_bound} holds, we can then use Lemma~\ref{lem::ub_ftrl_technical} to bound the stability term by 
 
-\[\stab\leq \frac{4}{1-\alpha} \sum_{t=1}^T   \bE_t\left[ \sum_{i \neq \wt I_t} q_i(x)^{2-\alpha} \wt \ell_{t,i}(x)^2 + q_{t\star}(x)^{2-\alpha} \wt \ell_{t,\wt I_t}(x)^2 \right] \;. \]
+\[\stab\leq \frac{4}{1-\alpha} \bE\left[\sum_{t=1}^T   \bE_t\left[ \sum_{i \neq \wt I_t} q_{t,i}(x)^{2-\alpha} \wt \ell_{t,i}(x)^2 + q_{t\star}(x)^{2-\alpha} \wt \ell_{t,\wt I_t}(x)^2 \right] \right]\;. \]
 
-To fit in the framework of \cite{BOBWhardproblems} we need to upper bound this term by $\frac{z_t}{\beta_t \gamma'_t}=\sqrt{\frac{z_t}{\beta_t}}$.
+To fit in the framework of \cite{BOBWhardproblems} we need to upper bound this term by $\frac{z_t(x)}{\beta_t \gamma'_t(x)}=\sqrt{\frac{z_t(x)}{\beta_t}}$.
+
+Consider first estimate (i). Following Eq.\;(8) from \cite{neu20adversarial} we can use that, for all $i \in [K]$,  
+\begin{align*}
+\bE_t\left[\wt \ell_{t,i}^2\right]&\leq\bE_t\left[\frac{\ind(a\in O_t)}{p_t(X_t)^2} x^\top\Sigma^{-1}X_tX_t^\top\Sigma^{-1}x\right] \\
+& = \bE_t\left[\frac{\ind(a\in O_t)}{p_t(X_t)^2}\text{Tr}(\Sigma^{-1}x x^\top\Sigma^{-1}X_t X_t^\top)\right] \\
+& \leq \frac{d}{p_t(X_t)} \;.
+\end{align*}
+\db{Not usable unless we use the same observation probability for everyone, and get a unique $p_t=\sqrt{\frac{\bE_{X\sim \cD}[z_t(X)]}{\beta_t}}$. Let us elaborate a bit.}
+Let us introduce 
+\[Z_t(x)\coloneqq   \sum_{i \neq \wt I_t} q_{t,i}(x)^{2-\alpha} + q_{t\star}(x)^{2-\alpha}\;. \]
+Then, if we fix a shared $p(X_t)=\bar p_t$ for all $t$ and $X_t$, we can obtain that 
+\[\bE_t[\stabt] \leq \sum_{t=1}^T \beta_t^{-1} \underbrace{(cK p_t)^{-1}}_{\gamma_t^{-1}} \cdot  \underbrace{\frac{4cKd}{1-\alpha}\cdot \bE_{X\sim \cD}[Z_t(X)]}_{z_t} , \] 
+if we consider that the ghost sample is independent from the filtration (that is, the filtration is just about things that were seen by the alg). With this writing, the $z_t$ that we fit in the framework of \cite{BOBWhardproblems} is defined as an expectation over contexts, and the SPB matching can then proceed as they describe. \db{Which is Ok if we can evaluate it up to a good approximation.} \db{So in summary, with estimate (i) it seems that we can complete the bound on the stability term using the SPB matching definition, and defining $u_t$ as in Eq.~\eqref{eq::cond_ut}. Note that in the case where $p_t$ is uniform then estimates (i) and (ii) match and MGR is not necessary, or just before the interaction to get an approximation of $\Sigma^{-1}$ up to an arbitrary precision.}
+
+
+Using $\Sigma_t$ as in (ii), we get 
+\begin{align*}
+	\bE_t\left[\wt \ell_{t,i}^2\right]&\leq\bE_t\left[\ind(a\in O_t) x^\top\Sigma_t^{-1}X_tX_t^\top\Sigma_t^{-1}x\right] \\ &  =
+	 x^\top\Sigma_t^{-1}\cdot p_t(X_t)X_tX_t^\top\Sigma_t^{-1}x \;.
+\end{align*}
+We then write that 
+\begin{align}
+	\stab &\leq \frac{4}{\beta_t(1-\alpha)} \sum_{t=1}^T \bE\left[\frac{Z_t(x)}{p_t(x)} \text{Tr}(p_t(x)xx^\top \Sigma_t^{-1} X_t X_t^\top p_t(X_t)\Sigma_t^{-1})\right] \;.
+\end{align}
+Now to be able to do the same as for Lemma 6 of \cite{neu20adversarial} we would need to have $Z_t(x)/p_t(x)=1$, so the expectation could go in the trace and yield only a $d$ factor. \db{I don't know how to deal with this term, this looks rather necessary if we don't want to use a uniform probability.}  
 
 
 \paragraph{Controlling the penalty term.} \antoine{If I understand correctly the second regularizer becomes useful to enable the use of Lemma~\ref{lem::ftrl_smooth_bound}}
