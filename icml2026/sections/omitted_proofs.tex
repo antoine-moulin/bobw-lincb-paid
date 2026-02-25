@@ -101,7 +101,7 @@ Thus, it remains to upper bound $\bbE_{X_0 \sim \cD} \sbr*{\wt R_T \spr*{X_0}}$.
 %
 where we denoted $\cR_t \spr*{q} = \frac{1}{\eta_t} H_\alpha \spr*{q} + \bar\beta H_{\bar\alpha} \spr*{q}$. By the standard FTRL analysis \citep[Exercise~28.12]{BanditBook} \antoine{copy/prove the lemma in Technical tools appendix and refer to it}, we have
 %
-\db{I guess we should write everything with expectations here?}
+\db{I guess for later we should write everything with expectations here? or bound $\bE[\stabt]$ below.}
 \begin{align*}
     \wt R_T \spr*{x} &\leq \sumtT \underbrace{\spr*{\sumaK \spr*{q_t \spr*{a \given x} - q_{t+1} \spr*{a \given x}} \inp{x, \wt \theta_{t, a}} - D_{\cR_t} \spr*{q_{t+1} \spr*{\cdot \given x}, q_t \spr*{\cdot \given x}}}}_{= \stabt}\\
     &\quad+ \underbrace{\cR_{T+1} \spr*{\pi_T^\star \spr*{\cdot \given x}} - \cR_1 \spr*{q_1 \spr*{\cdot \given x}} + \sumtT \spr*{\frac{1}{\eta_{t+1}} - \frac{1}{\eta_t}} H_{\alpha} \spr*{q_{t+1} \spr*{\cdot \given x}}}_{= \pen}\\
@@ -157,9 +157,9 @@ Apart from the MGR estimate, it seems that the above bounds impose a strong cons
 
 \db{This is a bit hard to sell from a computational perspective. Can we find less ugly? If we replace the prob by $1/2$ what do we lose? Do we still get BOBW but get uglier logs? Note that if the context space is somewhat continuous nothing prevent several arms to be optimal/close to optimal, so this would be constant anyway\dots}
 
-\db{An alternative path, but maybe super hard would be to upper bound the ratio $\sup_{x,y} \frac{p_t(x)}{p_t(y)}$.}
+\db{An alternative path, but maybe super hard would be to upper bound the ratio $\sup_{x,y} \frac{q_{t, \star}(x)}{q_{t,\star}(y)}$.}
 
-\db{Alternative alternative path: we can use the MGR to estimate the map of observation probabilities over contexts. Maybe we can use some sort of smoothness arguments to show that this would be enough to get a good tuning for $u_t$?}
+\db{Alternative alternative path: we can use the MGR samples to estimate the map of observation probabilities over contexts. Maybe we can use some sort of smoothness arguments to show that this would be enough to get a good tuning for $u_t$?}
 
 
 If we can guarantee that \eqref{eq::as_bound} holds, we can then use Lemma~\ref{lem::ub_ftrl_technical} to bound the stability term by 
@@ -168,7 +168,7 @@ If we can guarantee that \eqref{eq::as_bound} holds, we can then use Lemma~\ref{
 
 To fit in the framework of \cite{BOBWhardproblems} we need to upper bound this term by $\frac{z_t(x)}{\beta_t \gamma'_t(x)}=\sqrt{\frac{z_t(x)}{\beta_t}}$.
 
-Consider first estimate (i). Following Eq.\;(8) from \cite{neu20adversarial} we can use that, for all $i \in [K]$,  
+Consider first estimate (i). Following Eq.\;(8) from \cite{NeuO20} we can use that, for all $i \in [K]$,  
 \begin{align*}
 \bE_t\left[\wt \ell_{t,i}^2\right]&\leq\bE_t\left[\frac{\ind(a\in O_t)}{p_t(X_t)^2} x^\top\Sigma^{-1}X_tX_t^\top\Sigma^{-1}x\right] \\
 & = \bE_t\left[\frac{\ind(a\in O_t)}{p_t(X_t)^2}\text{Tr}(\Sigma^{-1}x x^\top\Sigma^{-1}X_t X_t^\top)\right] \\
@@ -178,8 +178,10 @@ Consider first estimate (i). Following Eq.\;(8) from \cite{neu20adversarial} we 
 Let us introduce 
 \[Z_t(x)\coloneqq   \sum_{i \neq \wt I_t} q_{t,i}(x)^{2-\alpha} + q_{t\star}(x)^{2-\alpha}\;. \]
 Then, if we fix a shared $p(X_t)=\bar p_t$ for all $t$ and $X_t$, we can obtain that 
-\[\bE_t[\stabt] \leq \sum_{t=1}^T \beta_t^{-1} \underbrace{(cK p_t)^{-1}}_{\gamma_t^{-1}} \cdot  \underbrace{\frac{4cKd}{1-\alpha}\cdot \bE_{X\sim \cD}[Z_t(X)]}_{z_t} , \] 
-if we consider that the ghost sample is independent from the filtration (that is, the filtration is just about things that were seen by the alg). With this writing, the $z_t$ that we fit in the framework of \cite{BOBWhardproblems} is defined as an expectation over contexts, and the SPB matching can then proceed as they describe. \db{Which is Ok if we can evaluate it up to a good approximation.} \db{So in summary, with estimate (i) it seems that we can complete the bound on the stability term using the SPB matching definition, and defining $u_t$ as in Eq.~\eqref{eq::cond_ut}. Note that in the case where $p_t$ is uniform then estimates (i) and (ii) match and MGR is not necessary, or just before the interaction to get an approximation of $\Sigma^{-1}$ up to an arbitrary precision.}
+\[\bE_t[\stabt] \leq \beta_t^{-1} \underbrace{(cK \bar p_t)^{-1}}_{\gamma_t^{-1}} \cdot  \underbrace{\frac{4cKd}{1-\alpha}\cdot \bE_{X\sim \cD}[Z_t(X)]}_{z_t} , \] 
+if we consider that the ghost sample is independent from the filtration (that is, the filtration is just about things that were seen by the alg). With this writing, the $z_t$ that we fit in the framework of \cite{BOBWhardproblems} is defined as an expectation over contexts, and the SPB matching can then proceed as they describe. \db{Which needs to be checked though, in particular the next step is to have a look at the entropy property for the penalty term.}
+
+\db{All of this is Ok if we can evaluate it up to a good approximation.} \db{So in summary, with estimate (i) it seems that we can complete the bound on the stability term using the SPB matching definition, and defining $u_t$ as in Eq.~\eqref{eq::cond_ut}. Note that in the case where $p_t$ is uniform then estimates (i) and (ii) match and MGR is not necessary, or just before the interaction to get an approximation of $\Sigma^{-1}$ up to an arbitrary precision.}
 
 
 Using $\Sigma_t$ as in (ii), we get 
@@ -191,13 +193,18 @@ We then write that
 \begin{align}
 	\stab &\leq \frac{4}{\beta_t(1-\alpha)} \sum_{t=1}^T \bE\left[\frac{Z_t(x)}{p_t(x)} \text{Tr}(p_t(x)xx^\top \Sigma_t^{-1} X_t X_t^\top p_t(X_t)\Sigma_t^{-1})\right] \;.
 \end{align}
-Now to be able to do the same as for Lemma 6 of \cite{neu20adversarial} we would need to have $Z_t(x)/p_t(x)=1$, so the expectation could go in the trace and yield only a $d$ factor. \db{I don't know how to deal with this term, this looks rather necessary if we don't want to use a uniform probability.}  
+Now to be able to do the same as for Lemma 6 of \cite{NeuO20} we would need to have $Z_t(x)/p_t(x)=1$, so the expectation could go in the trace and yield only a $d$ factor. \db{I don't know how to deal with this term, which looks rather necessary if we don't want to use a uniform probability.}  
 
 
-\paragraph{Controlling the penalty term.} \antoine{If I understand correctly the second regularizer becomes useful to enable the use of Lemma~\ref{lem::ftrl_smooth_bound}}
+\paragraph{Controlling the penalty term.} \db{Previous draft} \antoine{If I understand correctly the second regularizer becomes useful to enable the use of Lemma~\ref{lem::ftrl_smooth_bound}}
 \db{The second regularizer controls the ratio of entropies in-between rounds, that is condition (iii) in Thm. 7 of \cite{BOBWhardproblems}.}
 
 \db{Since the learning rate update is defined for SPB matching the only thing to do here is to control this entropy. Seems all arguments from \cite{BOBWhardproblems} should readily apply here with the ghost sample trick.}
+
+\db{Tldr, this part should be trivial with context-dependent probs.}
+
+\paragraph{Penalty term under $\bar p_t$ algorithm design}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
