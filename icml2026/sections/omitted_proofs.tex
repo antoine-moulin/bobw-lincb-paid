@@ -1,4 +1,4 @@
-\section{Temp Antoine: Regret analysis}
+\section{Tentative regret analysis/algorithm design}
 
     \subsection{Notation}
 
@@ -101,6 +101,11 @@ Thus, it remains to upper bound $\bbE_{X_0 \sim \cD} \sbr*{\wt R_T \spr*{X_0}}$.
 %
 where we denoted $\cR_t \spr*{q} = \frac{1}{\eta_t} H_\alpha \spr*{q} + \bar\beta H_{\bar\alpha} \spr*{q}$. By the standard FTRL analysis \citep[Exercise~28.12]{BanditBook} \antoine{copy/prove the lemma in Technical tools appendix and refer to it}, we have
 %
+
+\DB{Important point: is the "standard FTRL analysis" mentionned above working just fine if the optimal policy is not unique in some contexts? That is, what happens in the boundaries of the linear classifier if the context space is continuous? I remember Taira telling me that the uniqueness of the optimal policy was kinda crucial in his decomposition (Ok, actually I recall now more precisely that it was important that it is on a corner of the action set. Here we now that there exists one). For now we can maybe keep the assumption that there is a gap everywhere (which is necessary in our current formulation of stochastic bounds), but I suppose that dealing cleanly with multiple optimal actions in some contexts might make the contribution way cooler.}
+
+\db{I think there is somewhere a paper on how to cleanly implement/analyze FTRL with multiple optimal actions (a Japanese guy iirc?), might be good to check and maybe get this guy's FTRL regret decomposition.}
+
 \db{I guess for later we should write everything with expectations here? or bound $\bE[\stabt]$ below.}
 \begin{align*}
     \wt R_T \spr*{x} &\leq \sumtT \underbrace{\spr*{\sumaK \spr*{q_t \spr*{a \given x} - q_{t+1} \spr*{a \given x}} \inp{x, \wt \theta_{t, a}} - D_{\cR_t} \spr*{q_{t+1} \spr*{\cdot \given x}, q_t \spr*{\cdot \given x}}}}_{= \stabt}\\
@@ -152,7 +157,7 @@ using that all contexts are in the unit Euclidean ball. Some examples are
 The bound for the MGR estimates encourages to tune $M_t$ at most of order $\frac{1}{\eta_t}$, which is what is done in \cite{BOBWlinear}. This can in turn impose constraints on the tuning of $\eta_t$ (in that case the tuning of $u_t$ will appear in the control of the bias), which gives the extra logs in \cite{BOBWlinear}.  
 
 Apart from the MGR estimate, it seems that the above bounds impose a strong constraint on $p_t$, and so on $u_t$. Indeed, as in \cite{BOBWhardproblems} we use $u_t$ to meet the condition above by choosing it to be $u_t(x)=\eta_t v_t(x)$ for some function $v$. Unfortunately, without proving more properties on $p_t$ it seems that $u_t$ must be uniformly bounded (in both case). In particular, it seems that one must impose 
-\begin{equation}\label{eq::cond_ut}\forall x \in \cX, \; u_t(x) = \frac{4\eta_t}{1-\alpha} \cdot \max_{x\in \cX} q_{t\star}(x)^{1-\alpha} \;. 
+\begin{equation}\label{eq::cond_ut}\forall x \in \cX, \; u_t(x) = \frac{4}{1-\alpha}\cdot \frac{1}{\lambda_{\min}} \cdot \max_{x\in \cX} q_{t\star}(x)^{1-\alpha} \;. 
 \end{equation}
 
 \db{This is a bit hard to sell from a computational perspective. Can we find less ugly? If we replace the prob by $1/2$ what do we lose? Do we still get BOBW but get uglier logs? Note that if the context space is somewhat continuous nothing prevent several arms to be optimal/close to optimal, so this would be constant anyway\dots}
@@ -171,15 +176,20 @@ To fit in the framework of \cite{BOBWhardproblems} we need to upper bound this t
 Consider first estimate (i). Following Eq.\;(8) from \cite{NeuO20} we can use that, for all $i \in [K]$,  
 \begin{align*}
 \bE_t\left[\wt \ell_{t,i}^2\right]&\leq\bE_t\left[\frac{\ind(a\in O_t)}{p_t(X_t)^2} x^\top\Sigma^{-1}X_tX_t^\top\Sigma^{-1}x\right] \\
-& = \bE_t\left[\frac{\ind(a\in O_t)}{p_t(X_t)^2}\text{Tr}(\Sigma^{-1}x x^\top\Sigma^{-1}X_t X_t^\top)\right] \\
-& \leq \frac{d}{p_t(X_t)} \;.
+& = \bE_t\left[\frac{\ind(a\in O_t)}{p_t(X_t)^2} x^\top\Sigma^{-1}x \right] \\
+& \leq \frac{d}{p_t(X_t)\lambda_{\min}} \;.
+%& = \bE_t\left[\frac{\ind(a\in O_t)}{p_t(X_t)^2}\text{Tr}(\Sigma^{-1}x x^\top\Sigma^{-1}X_t X_t^\top)\right] \\
+%& \leq \frac{d}{p_t(X_t)} \;.
 \end{align*}
-\db{Not usable unless we use the same observation probability for everyone, and get a unique $p_t=\sqrt{\frac{\bE_{X\sim \cD}[z_t(X)]}{\beta_t}}$. Let us elaborate a bit.}
+\db{Not usable unless we use the same observation probability for everyone, and get a unique $p_t=\sqrt{\frac{\bE_{X\sim \cD}[z_t(X)]}{\beta_t}}$. Let us elaborate a bit.} \db{Note that we will have to discuss this $\lambda_{\min}$. In the best case this will give us a supplementary $d$ factor compared to e.g. adapting Gergo's alg (my guess).}
 Let us introduce 
 \[Z_t(x)\coloneqq   \sum_{i \neq \wt I_t} q_{t,i}(x)^{2-\alpha} + q_{t\star}(x)^{2-\alpha}\;. \]
 Then, if we fix a shared $p(X_t)=\bar p_t$ for all $t$ and $X_t$, we can obtain that 
-\[\bE_t[\stabt] \leq \beta_t^{-1} \underbrace{(cK \bar p_t)^{-1}}_{\gamma_t^{-1}} \cdot  \underbrace{\frac{4cKd}{1-\alpha}\cdot \bE_{X\sim \cD}[Z_t(X)]}_{z_t} , \] 
+\[\bE_t[\stabt] \leq \beta_t^{-1} \underbrace{(cK \bar p_t)^{-1}}_{\gamma_t^{-1}} \cdot  \underbrace{\frac{4cKd}{(1-\alpha)\lambda_{\min}}\cdot \bE_{X\sim \cD}[Z_t(X)]}_{z_t} , \] 
 if we consider that the ghost sample is independent from the filtration (that is, the filtration is just about things that were seen by the alg). With this writing, the $z_t$ that we fit in the framework of \cite{BOBWhardproblems} is defined as an expectation over contexts, and the SPB matching can then proceed as they describe. \db{Which needs to be checked though, in particular the next step is to have a look at the entropy property for the penalty term.}
+
+We can thus setup 
+\[\bar p_t = 2\sqrt{\frac{d \bar Z_t}{cK \lambda_{\min}(\Sigma)(1-\alpha)\beta_t}}+\frac{u_t}{\beta_t}\;. \]
 
 \db{All of this is Ok if we can evaluate it up to a good approximation.} \db{So in summary, with estimate (i) it seems that we can complete the bound on the stability term using the SPB matching definition, and defining $u_t$ as in Eq.~\eqref{eq::cond_ut}. Note that in the case where $p_t$ is uniform then estimates (i) and (ii) match and MGR is not necessary, or just before the interaction to get an approximation of $\Sigma^{-1}$ up to an arbitrary precision.}
 
@@ -193,6 +203,8 @@ We then write that
 \begin{align}
 	\stab &\leq \frac{4}{\beta_t(1-\alpha)} \sum_{t=1}^T \bE\left[\frac{Z_t(x)}{p_t(x)} \text{Tr}(p_t(x)xx^\top \Sigma_t^{-1} X_t X_t^\top p_t(X_t)\Sigma_t^{-1})\right] \;.
 \end{align}
+%\DB{Wait, can we do something like above which would make $\norm{\Sigma_t^{-1}}_{\text{op}}$ appear? And so wouldn't }
+
 Now to be able to do the same as for Lemma 6 of \cite{NeuO20} we would need to have $Z_t(x)/p_t(x)=1$, so the expectation could go in the trace and yield only a $d$ factor. \db{I don't know how to deal with this term, which looks rather necessary if we don't want to use a uniform probability.}  
 
 
@@ -203,8 +215,37 @@ Now to be able to do the same as for Lemma 6 of \cite{NeuO20} we would need to h
 
 \db{Tldr, this part should be trivial with context-dependent probs.}
 
-\paragraph{Penalty term under $\bar p_t$ algorithm design}
+\paragraph{Penalty term under $\bar p_t$ algorithm design} If $z_t$ is defined as an expectation over context, then it seems to me that so should be $h_t$, that is 
+\[h_t \coloneqq \bE_{x \sim \cD}[h_t(x)] \;. \]
+Since the composite regularizer guarantees that $h_{t+1}(x)\leq 2h_t(x)$ for any context $x$, then the bound holds for $h_t$ too. Hence, this $h_t$ can be used in the learning rate update and condition (iii) of Theorem 7 of \cite{BOBWhardproblems} is satisfied. Main drawback is that this gives us yet another expectation to compute.
 
+\paragraph{What's next} The design discussed above make us fall in the framework of Theorem 7 of \cite{BOBWlinear}. 
+
+It seems that we are already satisfying their assumption (i)-(iii) (even if (i) doesn't hold, it can be replaced by "the FTRL regret decomposition holds"), \red{so if we didn't do any mistake so far the bound in $T^{2/3}$ should be fine}. \db{Write it explicitly later.}
+
+Now it remains to verify if the supplementary conditions needed for the logarithmic bound hold. In Eq. (14) of \cite{BOBWhardproblems}, it is stated that supplementary conditions should be 
+\[\sqrt{z_t h_t}\leq \sqrt{\rho_1} (1-q_{t a^\star})  \quad \text{and} \quad u_t h_t \leq \rho_2 (1-q_{ta^\star}) \;. 
+\]
+What does it mean for us? Well, in both cases the LHS is properly defined, and I assume that for us the condition on the RHS should be taken in expectation over context, to satisfy a somewhat a self-bounding property when averaging over contexts. 
+
+Unfortunately, this doesn't seem to work as such. Following Taira's proof I guess we could have that for each individual context $\sqrt{Z_t(x) h_t(x)} \leq 1-q_{t a^\star}(x)$, and so $\bE[\sqrt{Z_t(x) h_t(x)}] \leq \bE[1-q_{t a^\star}(x)]$\footnote{$a^\star$ of course depend on $x$, I'm dropping it from the notation for simplicity}. Unfortunately for us, this is not what we want to verify and Cauchy-Schwarz gives the wrong inequality to get the desired result.
+
+We could try to prove the inequality anyway up to worsening the multiplicative constant. Or we could remark that we can maybe verify some kind of "worst-case" self-bounding property, that is from (70) and (71) in \cite{BOBWhardproblems} we get that $h_t(x)\lesssim (1-q_{ta^\star}(x))^\alpha$ and $z_t(x)\lesssim (1-q_{ta^\star}(x))^{2-\alpha}$, so we can simply write that 
+\begin{align*}
+	\bar z_t \bar h_t & \leq \max_{x \in \cX} z_t(x) \cdot \max_{y \in \cX} h_t(y) \\
+	& \leq \max_{x \in \cX}\; (1-q_{ta^\star}(x))^2
+\end{align*}
+Note that by the same arguments the same type of conditions hold for $u_t h_t$, and actually it's sure we can't do better for this one since we defined $u_t$ precisely by taking this maximum over contexts.
+
+\DB{Question: is this "worst-case" self-bounding property sufficient to get the logarithmic bound?}
+
+We can further say that the regret can be upper bounded by 
+\[ R_T \leq 2\sum_{t=1}^T\bE\left[\max_{x \in \cX}(1-q_{ta^\star}(x))\right]\;\dots \]
+but we actually want the reverse inequality\dots 
+
+If the context space is discrete, we can however get something like 
+\[R_T \geq \Delta_{\min} \cdot \inf_{y\in \cX}p_\cD(y)\cdot \bE\left[\max_{x \in \cX}(1-q_{ta^\star}(x))\right] \;,  \]
+which is however somewhat super ugly. \DB{Question: is it however possible to replace this guy by something proportional to $\lambda_{\min}$ somehow? Might depend on the context distribution, but it'd feel kinda OK imo. Again, this relies on invoking some sort of smoothness of the probabilities in similar directions.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

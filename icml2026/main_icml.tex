@@ -180,20 +180,32 @@ which we feel must be specifically highlighted here.
 \onecolumn
 
 
-\section{To-Do Dorian}
+\section{Comments Dorian}
+\DB{Updated!}
 
+Comments after visit in Oxford, Feb 26:
 \begin{itemize}
-    \item We have to cleanly re-write the proof with the ghost sample technique, which is probably going to simplify some things (\eg, Lemma 6, maybe the property is only needed for the ghost context). To do that, work directly from Lemma 3 of \citet{NeuO20}. We will probably be able to get the dimension from the standard trace trick.
-    \item In Eq.~\eqref{eq::bad_conditioning}, if we want to use Lemma 2 we have to upper bounds the probabilities by $1$ and get $K$ instead of $\sum q_a^{2-\alpha}$. Otherwise, we need a bound on $\bbE \sbr*{q_{t, a}^{2 - \alpha} \widehat \ell_{t, a}^2}$ directly. 
-    \item In the MGR concentration and the proof of Lemma 2 we wrongly do as if the observation probability was uniform across all arms, the only way to make it right seems to use $\min_{x \in \cX}p_t \spr*{x}$. Several errors of this type can be corrected by introducing a forced exploration.
+    \item We managed to move forward with the ghost sample trick.
+    \item To get the desired bound on the stability term we had to redefine all quantities in an average (over context) sense. 
+    \item It seems that we could at least get the $T^{2/3}$ bound this way. Not clear about the stochastic bound
+	\item Having context-dependent observation probabilities seem quite hard. We would need to finely examine the smoothness of this prob. This might be an interesting direction, but what assumptions are needed for this? 
 \end{itemize}
 
-In addition, below are some things that I don't understand and some remarks
-%
+To-DO:
 \begin{itemize}
-    \item In those papers they also use what is our Lemma 2 on the MGR-induced losses directly, not on the ``unbiased estimates losses''.
-    \item I really want to understand what ``should'' be the right dependency in $d$, if not from a formal lower bound at least from an intuitive point of view.
-    \item Kuroki et al. have a worst stochastic bound in $(\log(T))^3+d(\log(T))^2$. I'm wondering why and if we should have the same or if Taira's framework prevents us from that.
+	\item Check the Bobw properties with the averaged parametrization
+	\item If we can only get the $T^{2/3}$, benchmark with what a simpler adaptation of Exp3 + simpler time-dependent learning rate/exploration prob would get. 	
+\end{itemize}
+
+Questions:
+\begin{itemize}
+	\item It is not clear that we can relax the assumption that $\Delta_{\min}>0$ (even to "just" get the $T^{2/3}$). Doing so even in Yuko's setting might be interesting. It would be interesting to further refine what it can mean to be BOBW in a continuous contexts setting, maybe it might be cool to check the papers on Greedy to see if there are nice insights.
+	\item Related: taking Kuroki's setting and use the stability/penalty matching framework of Taira with Tsallis entropy might be nice, and maybe we can get improved results. 
+	\item Not clear what the lower bound should be (even in the full-info/no cost case), might be interesting too. 
+\end{itemize}
+
+\begin{itemize}
+    \item Kuroki et al. have a worst stochastic bound in $(\log(T))^3+d(\log(T))^2$. Seems to be because how the exploration parameter should both be large enough for the MGR bias and at the same time depend tightly on the learning rate.
 \end{itemize}
 
 \input{sections/omitted_proofs.tex}
