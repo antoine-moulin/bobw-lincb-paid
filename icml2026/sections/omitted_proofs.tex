@@ -169,7 +169,7 @@ Apart from the MGR estimate, it seems that the above bounds impose a strong cons
 
 If we can guarantee that \eqref{eq::as_bound} holds, we can then use Lemma~\ref{lem::ub_ftrl_technical} to bound the stability term by 
 
-\[\stab\leq \frac{4}{1-\alpha} \bE\left[\sum_{t=1}^T   \bE_t\left[ \sum_{i \neq \wt I_t} q_{t,i}(x)^{2-\alpha} \wt \ell_{t,i}(x)^2 + q_{t\star}(x)^{2-\alpha} \wt \ell_{t,\wt I_t}(x)^2 \right] \right]\;. \]
+\[\stab\leq \frac{4}{1-\alpha} \bE\left[\sum_{t=1}^T  \frac{1}{\beta_t} \bE_t\left[ \sum_{i \neq \wt I_t} q_{t,i}(x)^{2-\alpha} \wt \ell_{t,i}(x)^2 + q_{t\star}(x)^{2-\alpha} \wt \ell_{t,\wt I_t}(x)^2 \right] \right]\;. \]
 
 To fit in the framework of \cite{BOBWhardproblems} we need to upper bound this term by $\frac{z_t(x)}{\beta_t \gamma'_t(x)}=\sqrt{\frac{z_t(x)}{\beta_t}}$.
 
@@ -177,10 +177,11 @@ Consider first estimate (i). Following Eq.\;(8) from \cite{NeuO20} we can use th
 \begin{align*}
 \bE_t\left[\wt \ell_{t,i}^2\right]&\leq\bE_t\left[\frac{\ind(a\in O_t)}{p_t(X_t)^2} x^\top\Sigma^{-1}X_tX_t^\top\Sigma^{-1}x\right] \\
 & = \bE_t\left[\frac{\ind(a\in O_t)}{p_t(X_t)^2} x^\top\Sigma^{-1}x \right] \\
-& \leq \frac{d}{p_t(X_t)\lambda_{\min}} \;.
+& \leq \frac{1}{p_t(X_t)\lambda_{\min}} \;.
 %& = \bE_t\left[\frac{\ind(a\in O_t)}{p_t(X_t)^2}\text{Tr}(\Sigma^{-1}x x^\top\Sigma^{-1}X_t X_t^\top)\right] \\
 %& \leq \frac{d}{p_t(X_t)} \;.
 \end{align*}
+\db{We replace a $d$ by a $\lambda_{\min}^{-1}$, which is mild if the distribution of contexts is spanning some origin-centered ball somewhat uniformly.}
 \db{Not usable unless we use the same observation probability for everyone, and get a unique $p_t=\sqrt{\frac{\bE_{X\sim \cD}[z_t(X)]}{\beta_t}}$. Let us elaborate a bit.} \db{Note that we will have to discuss this $\lambda_{\min}$. In the best case this will give us a supplementary $d$ factor compared to e.g. adapting Gergo's alg (my guess).}
 Let us introduce 
 \[Z_t(x)\coloneqq   \sum_{i \neq \wt I_t} q_{t,i}(x)^{2-\alpha} + q_{t\star}(x)^{2-\alpha}\;. \]
@@ -201,12 +202,16 @@ Using $\Sigma_t$ as in (ii), we get
 \end{align*}
 We then write that 
 \begin{align}
-	\stab &\leq \frac{4}{\beta_t(1-\alpha)} \sum_{t=1}^T \bE\left[\frac{Z_t(x)}{p_t(x)} \text{Tr}(p_t(x)xx^\top \Sigma_t^{-1} X_t X_t^\top p_t(X_t)\Sigma_t^{-1})\right] \;.
+	\stab &\leq \frac{4}{1-\alpha} \sum_{t=1}^T \bE\left[\frac{Z_t(x)}{\beta_t p_t(x)} \text{Tr}(p_t(x)xx^\top \Sigma_t^{-1} X_t X_t^\top p_t(X_t)\Sigma_t^{-1})\right] \;.
 \end{align}
-%\DB{Wait, can we do something like above which would make $\norm{\Sigma_t^{-1}}_{\text{op}}$ appear? And so wouldn't }
+%
+
+
+
 
 Now to be able to do the same as for Lemma 6 of \cite{NeuO20} we would need to have $Z_t(x)/p_t(x)=1$, so the expectation could go in the trace and yield only a $d$ factor. \db{I don't know how to deal with this term, which looks rather necessary if we don't want to use a uniform probability.}  
 
+\DB{(Important) note: in a surprising way, \cite{BOBWlinear} seem to just be doing something that would (for us) look like saying $p_t(x) = Z_t(x)$, or if we would like to revert to arm-dependent observation probabilities it would be $p_{t,a}(x)=q_{t,a}(x)^{2-\alpha}$ for $a\neq \wt I_t$ and $p_{t,a}(x)=q_{t\star}(x)^{2-\alpha}$ for $a= \wt I_t$. Can we do something like this and follow their proof outline (and corresponding SP matching) to get similar result as theirs? It's surprising that it works, but there's no mistake that seems to fully break their analysis.} \db{Note that in a stochastic setting this setting kinda makes sense: we want to observe all seemingly sub-optimal arms when we play them (so $p_{t,a}(x))=q_{t,a}(x)$ mimics that), and we want to observe the arm that looks best at a sufficient rate to distinguish it from the others, which is somewhat captured by $q_{t\star}(x)$. Hence I tend to believe that we might be able to make this setting works out.}
 
 \paragraph{Controlling the penalty term.} \db{Previous draft} \antoine{If I understand correctly the second regularizer becomes useful to enable the use of Lemma~\ref{lem::ftrl_smooth_bound}}
 \db{The second regularizer controls the ratio of entropies in-between rounds, that is condition (iii) in Thm. 7 of \cite{BOBWhardproblems}.}
@@ -226,7 +231,7 @@ It seems that we are already satisfying their assumption (i)-(iii) (even if (i) 
 Now it remains to verify if the supplementary conditions needed for the logarithmic bound hold. In Eq. (14) of \cite{BOBWhardproblems}, it is stated that supplementary conditions should be 
 \[\sqrt{z_t h_t}\leq \sqrt{\rho_1} (1-q_{t a^\star})  \quad \text{and} \quad u_t h_t \leq \rho_2 (1-q_{ta^\star}) \;. 
 \]
-What does it mean for us? Well, in both cases the LHS is properly defined, and I assume that for us the condition on the RHS should be taken in expectation over context, to satisfy a somewhat a self-bounding property when averaging over contexts. 
+What does it mean for us? Well, in both cases the LHS is properly defined, and I assume that for us the condition on the RHS should be taken in expectation over context, to satisfy a somewhat self-bounding property when averaging over contexts. 
 
 Unfortunately, this doesn't seem to work as such. Following Taira's proof I guess we could have that for each individual context $\sqrt{Z_t(x) h_t(x)} \leq 1-q_{t a^\star}(x)$, and so $\bE[\sqrt{Z_t(x) h_t(x)}] \leq \bE[1-q_{t a^\star}(x)]$\footnote{$a^\star$ of course depend on $x$, I'm dropping it from the notation for simplicity}. Unfortunately for us, this is not what we want to verify and Cauchy-Schwarz gives the wrong inequality to get the desired result.
 
@@ -245,7 +250,9 @@ but we actually want the reverse inequality\dots
 
 If the context space is discrete, we can however get something like 
 \[R_T \geq \Delta_{\min} \cdot \inf_{y\in \cX}p_\cD(y)\cdot \bE\left[\max_{x \in \cX}(1-q_{ta^\star}(x))\right] \;,  \]
-which is however somewhat super ugly. \DB{Question: is it however possible to replace this guy by something proportional to $\lambda_{\min}$ somehow? Might depend on the context distribution, but it'd feel kinda OK imo. Again, this relies on invoking some sort of smoothness of the probabilities in similar directions.}
+which is however somewhat super ugly BUT is (I guess) sufficient to claim a log rate when the distributions are stochastic. This is not exactly BOBW but it's already a nice result to start with. 
+
+\DB{Question: is it further possible to replace this prob by something proportional to $\lambda_{\min}$ somehow? Might depend on the context distribution, but it'd feel kinda OK imo. Again, this relies on invoking some sort of smoothness of the probabilities in similar directions.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
