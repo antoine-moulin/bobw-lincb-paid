@@ -1,0 +1,168 @@
+\documentclass{article}
+
+% Recommended, but optional, packages for figures and better typesetting:
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs} % for professional tables
+\usepackage[round]{natbib}
+
+
+
+\usepackage[hmargin=2cm, vmargin=2cm]{geometry}
+
+% hyperref makes hyperlinks in the resulting PDF.
+% If your build breaks (sometimes temporarily if a hyperlink spans a page)
+% please comment out the following usepackage line and replace
+% \usepackage{icml2026} with \usepackage[nohyperref]{icml2026} above.
+\usepackage{ninecolors}
+\usepackage[colorlinks=true,
+            linkcolor=blue4,
+            filecolor=blue4,
+            urlcolor=blue4,
+            citecolor=blue4]{hyperref}
+
+% Attempt to make hyperref and algorithmic work together better:
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{thmtools}
+\usepackage{thm-restate}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% special macros
+\input{amacros.tex}
+\input{dmacros.tex}
+
+% if you use cleveref..
+\usepackage[capitalize,noabbrev]{cleveref}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THEOREMS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \theoremstyle{plain}
+% \newtheorem{theorem}{Theorem}[section]
+% \newtheorem{proposition}[theorem]{Proposition}
+% \newtheorem{Lem}{Lemma}
+% \newtheorem{corollary}[theorem]{Corollary}
+% \theoremstyle{definition}
+% \newtheorem{definition}[theorem]{Definition}
+% \newtheorem{assumption}[theorem]{Assumption}
+% \theoremstyle{remark}
+% \newtheorem{remark}[theorem]{Remark}
+
+\theoremstyle{plain}
+\declaretheorem[numberwithin=section,name=Theorem]{theorem}
+\declaretheorem[sibling=theorem,name=Proposition]{proposition}
+\declaretheorem[sibling=theorem,name=Lemma]{lemma}
+\declaretheorem[sibling=theorem,name=Corollary]{corollary}
+\theoremstyle{definition}
+\declaretheorem[sibling=theorem,name=Definition]{definition}
+\declaretheorem[sibling=theorem,name=Assumption]{assumption}
+\theoremstyle{remark}
+\declaretheorem[sibling=theorem,name=Remark]{remark}
+
+% Todonotes is useful during development; simply uncomment the next line
+%    and comment out the line below the next line to turn off comments
+%\usepackage[disable,textsize=tiny]{todonotes}
+\usepackage[textsize=tiny]{todonotes}
+
+
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1em}
+
+\begin{document}
+
+\begin{center}
+    {\LARGE Linear contextual bandits with paid observations via \texttt{LinExp3}}
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Setting}
+
+We consider the problem of linear contextual bandits with paid observations. A learner interacts with an environment for $T$ rounds. Each round $t$ goes as follows. The learner observes the context $X_t \in \cX$ drawn independently from a context distribution $\cD$, and then chooses an action $A_t \in \cA$ to play. After playing, the learner also has the option to pay a cost $c > 0$ to observe the losses of other actions $O_t \subseteq \cA$. The learner then suffers the loss $\ell_t \spr*{X_t, A_t} + c \abs*{O_t}$.
+
+For any time $t \in \sbr*{T}$, context $x \in \cX$, and action $a \in \cA$, the loss $\ell_t \spr*{x, a}$ is generated as $\ell_t \spr*{x, a} = \inp*{x, \theta_{t, a}}$, where $\theta_{t, a} \in \bbR^d$ is the unknown parameter. We assume that $\norm*{\theta_{t, a}}_2 \leq 1$ for all $t \in \sbr*{T}$ and $a \in \cA$, and $\norm*{x}_2 \leq 1$ for all $x \in \cX$. The goal of the learner is to minimize the cumulative regret defined as
+%
+\begin{equation*}
+    R_T = \bbE \sbr*{\sumtT \ell_t \spr*{X_t, A_t} - \sumtT \ell_t \spr*{X_t, \pi_T^\star \spr*{X_t}}} + c\,\bbE \sbr*{\sumtT \abs*{O_t}},
+\end{equation*}
+%
+where $\pi_T^\star\colon x \in \cX \mapsto \argmin_{a \in \cA} \bbE \sbr*{\sumtT \ell_t \spr*{x, a}}$ is the best policy in hindsight. Note that we can rewrite $c\,\bbE \sbr*{\sumtT \abs*{O_t}} = c K\, \bbE \sbr*{\sumtT p_t}$. In the following, we denote $\bbE_t$ the conditional expectation given the history up to time $t-1$. We also denote $\Sigma = \bbE \sbr*{X X\transpose}$ the covariance matrix of the context distribution.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Algorithm}
+
+We adapt the \texttt{RobustLinExp3} algorithm proposed by \citet{NeuO20} to our setting. The only differences are that we remove the uniform exploration and use the probability of observation instead, and the importance weights used in the estimators are based on the probability of observation instead of the probability of action selection. The details are given in Algorithm~\ref{alg:robustlinexp3}.
+
+\begin{algorithm}[ht]
+    \caption{\texttt{RobustLinExp3} for linear contextual bandits with paid observations}
+    \label{alg:robustlinexp3}
+    \begin{algorithmic}
+        \STATE \textbf{Input:} Action set $\cA$, context set $\cX$, time horizon $T$, learning rate $\eta > 0$.
+        \STATE \textbf{Initialize:} Set $\theta_{0, a} = 0$ for all $a \in \cA$.
+        \FOR{$t=1$ to $T$}
+            \STATE Observe context $X_t \in \cX$.
+            \STATE For any action $a \in \sbr*{K}$, compute probability distribution over actions $q_t \spr*{\cdot \given X_t} \propto \exp \spr*{- \eta \sum_{s=0}^{t-1} \inp*{X_t, \hat{\theta}_{s, a}}}$.
+            \STATE Draw action $A_t$ from distribution $q_t \spr*{\cdot \given X_t}$.
+            \STATE Compute probability $p_t$.
+            \STATE For any action $a \in \cA$, observe $\ell_t \spr*{X_t, a}$ with probability $p_t$, and denote $O_t$ the set of observed actions.
+            \STATE Suffer the loss $\ell_t \spr*{X_t, A_t} + c \abs{O_t}$.
+            \STATE For any action $a \in \sbr*{K}$, compute the estimated parameter $\hat{\theta}_{t, a} = \frac{\mathds{1} \scbr*{a \in O_t}}{p_t} \Sigma^{-1} X_t \ell_t \spr*{X_t, a}$.
+        \ENDFOR
+    \end{algorithmic}
+\end{algorithm}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Analysis}
+
+We start by noting that the estimator $\hat{\theta}_{t, a}$ used in Algorithm~\ref{alg:robustlinexp3} is an unbiased estimator of $\theta_{t, a}$. Indeed, by definition and a tower rule, we have
+%
+\begin{equation*}
+    \bbE_t \sbr*{\hat{\theta}_{t, a}} = \bbE_t \sbr*{\bbE_t \sbr*{\frac{\mathds{1} \scbr*{a \in O_t}}{p_t} \given X_t} \Sigma^{-1} X_t \ell_t \spr*{X_t, a}} = \Sigma^{-1} \bbE_t \sbr*{X_t \ell_t \spr*{X_t, a}} = \Sigma^{-1} \bbE_t \sbr*{X_t X_t\transpose} \theta_{t, a} = \theta_{t, a},
+\end{equation*}
+%
+where we used the fact that contexts are drawn independently, so $\bbE_t \sbr*{X_t X_t\transpose} = \Sigma$. Using Lemma~3 from \citet{NeuO20}, we can then introduce a ghost sample $X_0 \sim \cD$, and write the regret as
+%
+\begin{align*}
+    R_T = \bbE \sbr*{\sumtT \sumaK \spr*{q_t \spr*{a \given X_0} - \pi_T^\star \spr*{a \given X_0}} \widehat{\ell}_t \spr*{X_0, a}} + c K\, \bbE \sbr*{\sumtT p_t},
+\end{align*}
+%
+where we defined $\widehat{\ell}_t \spr*{X_0, a} = \inp*{X_0, \hat{\theta}_{t, a}}$. This shows it is enough to get an almost-sure bound on the same quantity without the expectation over $X_0$. In the following, we consider a fixed context $x \in \cX$.
+
+Denote $w_t \spr*{x, a} = \exp \spr{- \eta \sum_{s=1}^{t-1} \inp{x, \hat{\theta}_{s, a}}}$, and $W_t \spr*{x} = \sum_{a \in \cA} w_t \spr*{x, a}$. We can then write $q_t \spr*{a \given x} = w_t \spr*{x, a} / W_t \spr*{x}$. Using the same analysis as in the proof of Theorem~1 in \citet{NeuO20}, we have
+%
+\begin{align*}
+    \log \spr*{\frac{W_{T+1} \spr*{x}}{W_1 \spr*{x}}} &\geq \log \spr*{\frac{w_{T+1} \spr*{x, \pi_T^\star \spr*{x}}}{W_1 \spr*{x}}}\\
+    &= - \eta \sumtT \inp*{x, \widehat{\theta}_{t, \pi_T^\star \spr*{x}}} - \log K,
+\end{align*}
+%
+where we used $W_1 \spr*{x} = K$. On the other hand, we also have
+%
+\begin{align*}
+    \log \spr*{\frac{W_{t+1} \spr*{x}}{W_t \spr*{x}}} &= \log \spr*{\sum_{a \in \cA} \frac{w_{t+1} \spr*{x, a}}{W_t \spr*{x}}}\\
+    &
+\end{align*}
+
+
+
+\bibliography{biblio}
+\bibliographystyle{plainnat}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\appendix
+
+
+\end{document}
