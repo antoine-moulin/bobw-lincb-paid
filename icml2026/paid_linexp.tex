@@ -148,9 +148,74 @@ where we used $W_1 \spr*{x} = K$. On the other hand, we also have
 %
 \begin{align*}
     \log \spr*{\frac{W_{t+1} \spr*{x}}{W_t \spr*{x}}} &= \log \spr*{\sum_{a \in \cA} \frac{w_{t+1} \spr*{x, a}}{W_t \spr*{x}}}\\
-    &
+    &= \log \spr*{\sum_{a \in \cA} q_t \spr*{a \given x} \exp \spr*{- \eta \inp*{x, \hat{\theta}_{t, a}}}}.
 \end{align*}
-
+%
+Assuming we have $\eta \inp{x, \hat{\theta}_{t, a}} \geq - 1$ for all $t \in \sbr*{T}$ and $a \in \cA$, we can use the inequality $e^{-z} \leq 1 - z + z^2$ for all $z \leq 1$ to get
+%
+\begin{align*}
+    \log \spr*{\frac{W_{t+1} \spr*{x}}{W_t \spr*{x}}} &\leq \log \spr*{\sum_{a \in \cA} q_t \spr*{a \given x} \spr*{1 - \eta \inp*{x, \hat{\theta}_{t, a}} + \eta^2 \inp*{x, \hat{\theta}_{t, a}}^2}}\\
+    &= \log \spr*{1 - \eta \sum_{a \in \cA} q_t \spr*{a \given x} \inp*{x, \hat{\theta}_{t, a}} + \eta^2 \sum_{a \in \cA} q_t \spr*{a \given x}  \inp*{x, \hat{\theta}_{t, a}}^2},
+\end{align*}
+%
+where we also used $\sum_{a \in \cA} q_t \spr*{a \given x} = 1$. Then, note that by Jensen's inequality, $\sum_{a \in \cA} q_t \spr*{a \given x} \inp{x, \hat{\theta}_{t, a}}^2 \geq \spr*{\sum_{a \in \cA} q_t \spr*{a \given x} \inp{x, \hat{\theta}_{t, a}}}^2$. Therefore,
+%
+\begin{align*}
+    &- \eta \sum_{a \in \cA} q_t \spr*{a \given x} \inp{x, \hat{\theta}_{t, a}} + \eta^2 \sum_{a \in \cA} q_t \spr*{a \given x} \inp{x, \hat{\theta}_{t, a}}^2\\
+    &\qquad\geq - \eta \sum_{a \in \cA} q_t \spr*{a \given x} \inp{x, \hat{\theta}_{t, a}} + \eta^2 \spr*{\sum_{a \in \cA} q_t \spr*{a \given x} \inp{x, \hat{\theta}_{t, a}}}^2 \\
+    &\qquad= \spr*{\eta \sum_{a \in \cA} q_t \spr*{a \given x} \inp{x, \hat{\theta}_{t, a}} - \frac12}^2 - \frac14 \\
+    &\qquad\geq -\frac14 > -1.
+\end{align*}
+%
+Hence the log argument in the previous inequality is always larger than $-1$ (for any $\eta > 0$), so we can apply the inequality $\log \spr*{1 + u} \leq u$ valid for any $u$, and get
+%
+\begin{equation*}
+    \log \spr*{\frac{W_{t+1} \spr*{x}}{W_t \spr*{x}}} \leq - \eta \sum_{a \in \cA} q_t \spr*{a \given x} \inp{x, \hat{\theta}_{t, a}} + \eta^2 \sum_{a \in \cA} q_t \spr*{a \given x}  \inp{x, \hat{\theta}_{t, a}}^2.
+\end{equation*}
+%
+Noticing that $\sumtT \log \spr*{\frac{W_{t+1} \spr*{x}}{W_t \spr*{x}}} = \log \spr*{\frac{W_{T+1} \spr*{x}}{W_1 \spr*{x}}}$, we can sum the previous upper bound over $t$, combine it with the previous lower bound, and divide by $\eta$ to get
+%
+\begin{equation*}
+    \sumtT \sum_{a \in \cA} q_t \spr*{a \given x} \inp{x, \hat{\theta}_{t, a}} - \sumtT \inp{x, \hat{\theta}_{t, \pi_T^\star \spr*{x}}} \leq \frac{\log K}{\eta} + \eta \sumtT \sum_{a \in \cA} q_t \spr*{a \given x}  \inp{x, \hat{\theta}_{t, a}}^2.
+\end{equation*}
+%
+Therefore, the regret can be upper bounded as
+%
+\begin{equation*}
+    R_T \leq \frac{\log K}{\eta} + \eta \bbE \sbr*{\sumtT \sum_{a \in \cA} q_t \spr*{a \given X_0} \inp{X_0, \hat{\theta}_{t, a}}^2} + c K\, \bbE \sbr*{\sumtT p_t}.
+\end{equation*}
+%
+Looking at the variance for a given $t$, we have
+%
+\begin{align*}
+    \bbE_t \sbr*{\sum_{a \in \cA} q_t \spr*{a \given X_0}  \inp{X_0, \hat{\theta}_{t, a}}^2} &= \bbE_t \sbr*{\sum_{a \in \cA} q_t \spr*{a \given X_0} \frac{\mathds{1} \scbr*{a \in O_t}}{p_t^2} \ell_t \spr*{X_t, a}^2 \inp*{X_0, \Sigma^{-1} X_t}^2}\\
+    &= \bbE_t \sbr*{\sum_{a \in \cA} q_t \spr*{a \given X_0} \frac{1}{p_t} \ell_t \spr*{X_t, a}^2 \inp*{X_0, \Sigma^{-1} X_t}^2}\\
+    &\leq \bbE_t \sbr*{\sum_{a \in \cA} q_t \spr*{a \given X_0} \frac{1}{p_t} \inp*{X_0, \Sigma^{-1} X_t}^2}
+\end{align*}
+%
+where we used $\bbE_t \sbr*{\mathds{1} \scbr*{a \in O_t} \given X_0, X_t} = p_t$ in the second line, and $\ell_t \spr*{X_t, a}^2 \leq 1$ in the third line. Then, writing $\inp{X_0, \Sigma^{-1} X_t}^2 = X_0\transpose \Sigma^{-1} X_t X_t\transpose \Sigma^{-1} X_0 = \tr \spr*{\Sigma^{-1} X_t X_t\transpose \Sigma^{-1} X_0 X_0\transpose}$, we can use $\bbE_t \sbr*{X_t X_t\transpose \given X_0} = \Sigma$ by independence of $X_0$ and $X_t$ to obtain
+%
+\begin{equation*}
+    \bbE_t \sbr*{\sum_{a \in \cA} q_t \spr*{a \given X_0} \inp{X_0, \hat{\theta}_{t, a}}^2} \leq \frac{1}{p_t} \bbE_t \sbr*{\tr \spr*{\Sigma^{-1} X_0 X_0\transpose}} = \frac{d}{p_t}.
+\end{equation*}
+%
+Plugging this back into the regret bound, we get
+%
+\begin{equation*}
+    R_T \leq \frac{\log K}{\eta} + \eta d \bbE \sbr*{\sumtT \frac{1}{p_t}} + c K\, \bbE \sbr*{\sumtT p_t}.
+\end{equation*}
+%
+Taking a constant $p_t = p$, we can optimize the previous bound by choosing $p$ such that $\eta d / p = c K p$, i.e., $p = \sqrt{\eta d / (c K)}$. This gives
+%
+\begin{equation*}
+    R_T \leq \frac{\log K}{\eta} + 2 \sqrt{\eta d c K} T.
+\end{equation*}
+%
+Finally, choosing $\eta = \spr*{\frac{\log K}{\sqrt{d c K} T}}^{2/3}$ gives \antoine{up to a missing minimum eigenvalue to enforce $\eta \inp{x, \hat{\theta}_{t, a}} \geq -1$}
+%
+\begin{equation*}
+    R_T = \cO \spr*{T^{2/3}}.
+\end{equation*}
 
 
 \bibliography{biblio}
