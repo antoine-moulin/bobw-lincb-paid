@@ -185,22 +185,28 @@ which we feel must be specifically highlighted here.
 
 Comments after visit in Oxford, Feb 26:
 \begin{itemize}
-    \item We managed to move forward with the ghost sample trick.
-    \item To get the desired bound on the stability term we had to redefine all quantities in an average (over context) sense. 
-    \item It seems that we could at least get the $T^{2/3}$ bound this way. Not clear about the stochastic bound
-	\item Having context-dependent observation probabilities seem quite hard. We would need to finely examine the smoothness of this prob. This might be an interesting direction, but what assumptions are needed for this? 
+\item We cleaned the beginning of the analysis (FTRL stability/penalty/bias decomposition) with the ghost sample trick.
+\item We explored new ways to tune the FTRL approach in order to fit either in the setting of Tsuchiya or Kuroki
+\item We have good hope to complete a BoBW analysis in both settings, but technical details still need to be sorted out. 
 \end{itemize}
 
-To-DO:
+\paragraph{Direction 1: fitting Tsuchiya's framework} The main problem here is the stability term: the covariance matrix essentially involves the observation probabilities on all contexts, while we would like to cancel the probability on the ghost sample $X_0$. To solve this, we proposed a \textit{fixed} observation probabilities for all contexts, that cancels the \textit{average} sampling probability. This is computationnally burdensome, but fits quite elegantly in Taira's framework from a theoretical standpoint. Perhaps surprisingly, it seems that we can get the $\log(T)$ stochastic bound with this approach, but with rather ugly constants.  
+
+\paragraph{Direction 2: fitting Kuroki's framework} After processing the SPB matching analysis it appeared even more surprising to us that Kuroki's approach doesn't get the problem of ghost sample/current context mismatch. Hence, Wwe investigates a learning rate tuning similar to theirs to see if we would allow results that resemble theirs. It appears that we can, but we still need to process the technical details (again, mostly for the self-bounding/stochastic aspect). This definitely looks promising.
+
+Overall, I think that if we can close the analysis we could develop the two approaches in the paper and present them as kinda complementary: clean SPB matching/better asymptotic stochastic bound but more heavy, versus efficient update at the cost of less clean stochastic bound.
+
+It remains to understand if the second approach is really fundamentally different to the first one. Without contexts we have the intuition that Kuroki-style tuning kinda approximates Tsuchiya clean SPB matching. Essentially, they are matching the targeted \textit{upper bounds} of the SPB terms instead of the terms themselves directly. Having experiments would definitely be valuable to understand the practical benefits and drawbacks of each approach. 
+
+\paragraph{To-DO} Antoine will take the technical lead before Neurips deadline, and we'll try together to make the two directions mentioned above work. Main tasks are:
 \begin{itemize}
-	\item Check the Bobw properties with the averaged parametrization
-	\item If we can only get the $T^{2/3}$, benchmark with what a simpler adaptation of Exp3 + simpler time-dependent learning rate/exploration prob would get. 	
+	\item Fill the gaps in the proof. There are various placeholders in the draft now. 
+	\item Seems rather clear that both direction can yield the adversarial bound, but the stochastic ones are still very sketched in the draft. Process the details, this is the main challenge.  	
 \end{itemize}
 
-Questions:
+\paragraph{Some Questions}
 \begin{itemize}
-	\item It is not clear that we can relax the assumption that $\Delta_{\min}>0$ (even to "just" get the $T^{2/3}$). Doing so even in Yuko's setting might be interesting. It would be interesting to further refine what it can mean to be BOBW in a continuous contexts setting, maybe it might be cool to check the papers on Greedy to see if there are nice insights.
-	\item Related: taking Kuroki's setting and use the stability/penalty matching framework of Taira with Tsallis entropy might be nice, and maybe we can get improved results. 
+	\item It is not clear that we can relax the assumption that $\Delta_{\min}>0$ (even to "just" get the $T^{2/3}$). Doing so even in Yuko's setting (without costs) might be interesting. I have a feeling that the entropies used in the literature are inherently unable to do this because they don't decrease when two arms have constant probability, even if the others are converging to zero. Or maybe this can be solved with arm-dependent learning rate (this seems to be Haipeng's solution). It would be interesting to further refine what it can mean to be BOBW in a continuous contexts setting, and might be cool to check the papers on Greedy to see if there share nice insights for the stochastic case.
 	\item Not clear what the lower bound should be (even in the full-info/no cost case), might be interesting too. 
 \end{itemize}
 
